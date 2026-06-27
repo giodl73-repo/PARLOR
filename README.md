@@ -36,22 +36,35 @@ The in-tree test suite additionally verifies startpos perft(5) = 4,865,609.
 | Game | Status | Core |
 |---|---|---|
 | **chess** | implemented | perft-verified legal move generation |
-| backgammon | planned | stochastic equity / pip / doubling-cube kernel |
+| **backgammon** | implemented | rules kernel + verified pip count and dice distribution |
 | checkers | planned | perft-verifiable perfect-information kernel |
 | go | planned | rules / territory kernel |
 
 Backgammon is the deliberate second entry: it flips the analytical core from a
-deterministic, perfect-information move tree to a **stochastic** one (pip counts,
-roll equities, match-equity tables, the doubling cube), proving the series spans
-both kinds of game.
+deterministic, perfect-information move tree to a **stochastic** one. Its cited,
+verifiable anchors are the canonical opening **pip count of 167 per player** and
+the **dice distribution** (21 distinct rolls whose probabilities sum to 1 over 36
+outcomes; mean roll value 49/6), with legal-move generation under a roll verified
+by rule-property tests:
+
+```
+$ parlor backgammon verify
+[PASS] opening pip count is 167 per player (white 167, black 167)
+[PASS] the 21 dice rolls' probabilities sum to 1
+[PASS] mean roll value is 49/6
+```
+
+Both games were authored end-to-end by the CRAFT dogfood loop (`run-wave
+--execute` + the Copilot draft provider, gated on clippy + the cited tests).
 
 ## Workspace
 
 ```
 crates/
-  parlor-core    # cross-game contract: Game, Perft, EvidenceLabel, PerftBenchmark
-  parlor-chess   # chess kernel: board, FEN, legal moves, perft, cited benchmarks
-  parlor-cli     # one front door: `parlor games`, `parlor chess ...`
+  parlor-core        # cross-game contract: Game, Perft, EvidenceLabel, PerftBenchmark
+  parlor-chess       # chess kernel: board, FEN, legal moves, perft, cited benchmarks
+  parlor-backgammon  # backgammon kernel: board, pip count, dice model, legal plays
+  parlor-cli         # one front door: `parlor games`, `parlor chess ...`, `parlor backgammon ...`
 ```
 
 ## Usage

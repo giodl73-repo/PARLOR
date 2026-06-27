@@ -11,3 +11,4 @@ path = "src/main.rs"
 [dependencies]
 parlor-core.workspace = true
 parlor-chess.workspace = true
+parlor-backgammon.workspace = true
