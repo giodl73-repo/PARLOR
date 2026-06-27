@@ -1,0 +1,13 @@
+[package]
+name = "parlor-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "parlor"
+path = "src/main.rs"
+
+[dependencies]
+parlor-core.workspace = true
+parlor-chess.workspace = true

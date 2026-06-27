@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/parlor-core",
+    "crates/parlor-chess",
+    "crates/parlor-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+parlor-core = { path = "crates/parlor-core" }
+parlor-chess = { path = "crates/parlor-chess" }
