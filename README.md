@@ -38,7 +38,7 @@ The in-tree test suite additionally verifies startpos perft(5) = 4,865,609.
 | **chess** | implemented | perft-verified legal move generation |
 | **backgammon** | implemented | rules kernel + verified pip count and dice distribution |
 | **checkers** | implemented | English-draughts kernel, perft-verified (mandatory capture) |
-| go | planned | rules / territory kernel |
+| **go** | implemented | rules kernel (captures, suicide, ko) + area scoring |
 
 Backgammon is the deliberate second entry: it flips the analytical core from a
 deterministic, perfect-information move tree to a **stochastic** one. Its cited,
@@ -65,7 +65,8 @@ crates/
   parlor-chess       # chess kernel: board, FEN, legal moves, perft, cited benchmarks
   parlor-backgammon  # backgammon kernel: board, pip count, dice model, legal plays
   parlor-checkers    # checkers (English draughts) kernel: legal moves, perft, cited benchmarks
-  parlor-cli         # one front door: `parlor games`, `parlor chess|backgammon|checkers ...`
+  parlor-go          # go kernel: captures, suicide, ko, legal moves, area scoring
+  parlor-cli         # one front door: `parlor games`, `parlor chess|backgammon|checkers|go ...`
 ```
 
 ## Usage

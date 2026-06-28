@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/parlor-go",
     "crates/parlor-checkers",
     "crates/parlor-core",
     "crates/parlor-chess",
@@ -14,6 +15,7 @@ edition = "2021"
 license = "MIT"
 
 [workspace.dependencies]
+parlor-go = { path = "crates/parlor-go" }
 parlor-checkers = { path = "crates/parlor-checkers" }
 parlor-core = { path = "crates/parlor-core" }
 parlor-chess = { path = "crates/parlor-chess" }

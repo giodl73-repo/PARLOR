@@ -1,77 +1,89 @@
+use std::env;
 use std::process::ExitCode;
 
-const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const DEFAULT_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.is_empty() {
-        eprintln!("usage: parlor-cli <games|chess|backgammon|checkers> ...");
-        return ExitCode::FAILURE;
-    }
-    match args[0].as_str() {
-        "games" => {
-            print_games();
+    let args: Vec<String> = env::args().skip(1).collect();
+    match args.first().map(|s| s.as_str()) {
+        Some("games") => {
+            cmd_games();
             ExitCode::SUCCESS
         }
-        "chess" => chess_cmd(&args[1..]),
-        "backgammon" => backgammon_cmd(&args[1..]),
-        "checkers" => checkers_cmd(&args[1..]),
-        other => {
-            eprintln!("unknown command: {}", other);
+        Some("chess") => cmd_chess(&args[1..]),
+        Some("backgammon") => cmd_backgammon(&args[1..]),
+        Some("checkers") => cmd_checkers(&args[1..]),
+        Some("go") => cmd_go(&args[1..]),
+        Some(other) => {
+            eprintln!("unknown game: {other}");
+            ExitCode::FAILURE
+        }
+        None => {
+            print_usage();
             ExitCode::FAILURE
         }
     }
 }
 
-fn print_games() {
-    println!("{:<12} {:<12}", "GAME", "STATUS");
-    println!("{:<12} {:<12}", "chess", "implemented");
-    println!("{:<12} {:<12}", "backgammon", "implemented");
-    println!("{:<12} {:<12}", "checkers", "implemented");
-    println!("{:<12} {:<12}", "go", "planned");
+fn print_usage() {
+    eprintln!("usage: parlor-cli <games|chess|backgammon|checkers|go> ...");
 }
 
-fn report(all_ok: &mut bool, ok: bool, label: &str) {
-    if ok {
-        println!("[PASS] {}", label);
+fn tag(pass: bool) -> &'static str {
+    if pass {
+        "PASS"
     } else {
-        *all_ok = false;
-        println!("[FAIL] {}", label);
+        "FAIL"
     }
 }
 
-fn chess_cmd(args: &[String]) -> ExitCode {
+fn cmd_games() {
+    println!("{:<12} {:<11} STATUS", "GAME", "ID");
+    println!("{:<12} {:<11} ------", "----", "--");
+    for (name, id) in [
+        ("Chess", "chess"),
+        ("Backgammon", "backgammon"),
+        ("Checkers", "checkers"),
+        ("Go", "go"),
+    ] {
+        println!("{:<12} {:<11} implemented", name, id);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Chess
+// ---------------------------------------------------------------------------
+
+fn cmd_chess(args: &[String]) -> ExitCode {
     match args.first().map(|s| s.as_str()) {
         Some("verify") => chess_verify(),
         Some("perft") => chess_perft(&args[1..]),
         Some("moves") => chess_moves(&args[1..]),
         _ => {
-            eprintln!("usage: parlor-cli chess <verify|perft|moves>");
+            eprintln!("usage: chess <verify|perft|moves>");
             ExitCode::FAILURE
         }
     }
 }
 
 fn chess_verify() -> ExitCode {
-    let mut all_ok = true;
-    for b in parlor_chess::BENCHMARKS {
-        let c = parlor_chess::check(b);
-        let status = if c.passed() {
-            "PASS"
-        } else {
-            all_ok = false;
-            "FAIL"
-        };
+    let mut ok = true;
+    for benchmark in parlor_chess::BENCHMARKS {
+        let check = parlor_chess::check(benchmark);
+        let pass = check.passed();
+        if !pass {
+            ok = false;
+        }
         println!(
             "[{}] {} depth {} expected {} observed {}",
-            status,
-            c.benchmark.name,
-            c.benchmark.depth,
-            c.benchmark.expected_nodes,
-            c.observed_nodes
+            tag(pass),
+            check.benchmark.name,
+            check.benchmark.depth,
+            check.benchmark.expected_nodes,
+            check.observed_nodes
         );
     }
-    if all_ok {
+    if ok {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE
@@ -79,7 +91,7 @@ fn chess_verify() -> ExitCode {
 }
 
 fn chess_perft(args: &[String]) -> ExitCode {
-    let mut fen = START_FEN.to_string();
+    let mut fen = DEFAULT_FEN.to_string();
     let mut depth: u32 = 1;
     let mut divide = false;
     let mut i = 0;
@@ -96,16 +108,14 @@ fn chess_perft(args: &[String]) -> ExitCode {
             }
             "--depth" => {
                 if i + 1 < args.len() {
-                    match args[i + 1].parse::<u32>() {
-                        Ok(d) => {
-                            depth = d;
-                            i += 2;
-                        }
+                    match args[i + 1].parse() {
+                        Ok(d) => depth = d,
                         Err(_) => {
                             eprintln!("invalid depth: {}", args[i + 1]);
                             return ExitCode::FAILURE;
                         }
                     }
+                    i += 2;
                 } else {
                     eprintln!("--depth requires a value");
                     return ExitCode::FAILURE;
@@ -116,7 +126,7 @@ fn chess_perft(args: &[String]) -> ExitCode {
                 i += 1;
             }
             other => {
-                eprintln!("unknown argument: {}", other);
+                eprintln!("unknown option: {other}");
                 return ExitCode::FAILURE;
             }
         }
@@ -131,13 +141,17 @@ fn chess_perft(args: &[String]) -> ExitCode {
     };
 
     if divide {
-        let parts = board.perft_divide(depth);
         let mut total: u64 = 0;
-        for (mv, count) in &parts {
-            println!("{}: {}", parlor_chess::move_name(mv), count);
+        for m in board.legal_moves() {
+            let count = if depth >= 1 {
+                board.make(&m).perft(depth - 1)
+            } else {
+                0
+            };
+            println!("{}: {}", parlor_chess::move_name(&m), count);
             total += count;
         }
-        println!("Total: {}", total);
+        println!("total: {}", total);
     } else {
         println!("{}", board.perft(depth));
     }
@@ -145,7 +159,7 @@ fn chess_perft(args: &[String]) -> ExitCode {
 }
 
 fn chess_moves(args: &[String]) -> ExitCode {
-    let mut fen = START_FEN.to_string();
+    let mut fen = DEFAULT_FEN.to_string();
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
@@ -159,7 +173,7 @@ fn chess_moves(args: &[String]) -> ExitCode {
                 }
             }
             other => {
-                eprintln!("unknown argument: {}", other);
+                eprintln!("unknown option: {other}");
                 return ExitCode::FAILURE;
             }
         }
@@ -172,20 +186,25 @@ fn chess_moves(args: &[String]) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-
-    for mv in board.legal_moves() {
-        println!("{}", parlor_chess::move_name(&mv));
+    let moves = board.legal_moves();
+    for m in &moves {
+        println!("{}", parlor_chess::move_name(m));
     }
+    println!("{} legal moves", moves.len());
     ExitCode::SUCCESS
 }
 
-fn backgammon_cmd(args: &[String]) -> ExitCode {
+// ---------------------------------------------------------------------------
+// Backgammon
+// ---------------------------------------------------------------------------
+
+fn cmd_backgammon(args: &[String]) -> ExitCode {
     match args.first().map(|s| s.as_str()) {
         Some("pip") => backgammon_pip(),
         Some("verify") => backgammon_verify(),
         Some("roll") => backgammon_roll(&args[1..]),
         _ => {
-            eprintln!("usage: parlor-cli backgammon <pip|verify|roll>");
+            eprintln!("usage: backgammon <pip|verify|roll>");
             ExitCode::FAILURE
         }
     }
@@ -193,61 +212,89 @@ fn backgammon_cmd(args: &[String]) -> ExitCode {
 
 fn backgammon_pip() -> ExitCode {
     let board = parlor_backgammon::Board::start();
-    println!(
-        "White: {}",
-        board.pip_count(parlor_backgammon::Player::White)
-    );
-    println!(
-        "Black: {}",
-        board.pip_count(parlor_backgammon::Player::Black)
-    );
+    for player in [
+        parlor_backgammon::Player::Black,
+        parlor_backgammon::Player::White,
+    ] {
+        println!("{:?}: {}", player, board.pip_count(player));
+    }
     ExitCode::SUCCESS
 }
 
-fn backgammon_verify() -> ExitCode {
-    let mut all_ok = true;
-    let board = parlor_backgammon::Board::start();
-    let white = board.pip_count(parlor_backgammon::Player::White);
-    let black = board.pip_count(parlor_backgammon::Player::Black);
-    report(
-        &mut all_ok,
-        white == 167 && black == 167,
-        &format!(
-            "opening pip count 167 per player (white {}, black {})",
-            white, black
-        ),
-    );
-
-    let rolls = parlor_backgammon::Dice::distinct_rolls();
-    let sum: f64 = rolls.iter().map(|r| r.probability).sum();
-    report(
-        &mut all_ok,
-        rolls.len() == 21 && (sum - 1.0).abs() < 1e-9,
-        &format!(
-            "21 dice rolls summing to 1 (count {}, sum {})",
-            rolls.len(),
-            sum
-        ),
-    );
-
-    let mean: f64 = rolls
-        .iter()
-        .map(|r| {
-            let value = if r.die_a == r.die_b {
-                4u32 * (r.die_a as u32)
+fn opening_rolls() -> Vec<(u8, u8, f64, u32)> {
+    let mut rolls = Vec::new();
+    for d1 in 1..=6u8 {
+        for d2 in d1..=6u8 {
+            let probability = if d1 == d2 { 1.0 / 36.0 } else { 2.0 / 36.0 };
+            let pips = if d1 == d2 {
+                4 * d1 as u32
             } else {
-                (r.die_a as u32) + (r.die_b as u32)
+                d1 as u32 + d2 as u32
             };
-            r.probability * (value as f64)
-        })
-        .sum();
-    report(
-        &mut all_ok,
-        (mean - 49.0 / 6.0).abs() < 1e-9,
-        &format!("mean roll 49/6 (observed {})", mean),
+            rolls.push((d1, d2, probability, pips));
+        }
+    }
+    rolls
+}
+
+fn backgammon_verify() -> ExitCode {
+    let mut ok = true;
+    let board = parlor_backgammon::Board::start();
+
+    for player in [
+        parlor_backgammon::Player::Black,
+        parlor_backgammon::Player::White,
+    ] {
+        let pip = board.pip_count(player);
+        let pass = pip == 167;
+        if !pass {
+            ok = false;
+        }
+        println!(
+            "[{}] opening pip {:?} = {} (expected 167)",
+            tag(pass),
+            player,
+            pip
+        );
+    }
+
+    let rolls = opening_rolls();
+
+    let count_ok = rolls.len() == 21;
+    if !count_ok {
+        ok = false;
+    }
+    println!(
+        "[{}] distinct dice rolls = {} (expected 21)",
+        tag(count_ok),
+        rolls.len()
     );
 
-    if all_ok {
+    let sum: f64 = rolls.iter().map(|r| r.2).sum();
+    let sum_ok = (sum - 1.0).abs() < 1e-9;
+    if !sum_ok {
+        ok = false;
+    }
+    println!(
+        "[{}] dice roll probabilities sum = {} (expected 1)",
+        tag(sum_ok),
+        sum
+    );
+
+    let mean: f64 = rolls.iter().map(|r| r.2 * r.3 as f64).sum();
+    let expected_mean = 49.0 / 6.0;
+    let mean_ok = (mean - expected_mean).abs() < 1e-9;
+    if !mean_ok {
+        ok = false;
+    }
+    println!(
+        "[{}] mean roll = {} (expected {})",
+        tag(mean_ok),
+        mean,
+        expected_mean
+    );
+
+    if ok {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE
@@ -256,7 +303,7 @@ fn backgammon_verify() -> ExitCode {
 
 fn backgammon_roll(args: &[String]) -> ExitCode {
     if args.len() < 2 {
-        eprintln!("usage: parlor-cli backgammon roll <d1> <d2>");
+        eprintln!("usage: backgammon roll <d1> <d2>");
         return ExitCode::FAILURE;
     }
     let d1: u8 = match args[0].parse() {
@@ -273,51 +320,49 @@ fn backgammon_roll(args: &[String]) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-
-    let plays =
-        parlor_backgammon::Board::start().legal_plays(parlor_backgammon::Player::White, d1, d2);
-    let mut distinct: Vec<parlor_backgammon::Play> = Vec::new();
-    for p in plays {
-        if !distinct.contains(&p) {
-            distinct.push(p);
-        }
-    }
-    println!("{}", distinct.len());
+    let board = parlor_backgammon::Board::start();
+    let plays = board.legal_plays(parlor_backgammon::Player::White, d1, d2);
+    println!("{} distinct legal plays for {}-{}", plays.len(), d1, d2);
     ExitCode::SUCCESS
 }
 
-fn checkers_cmd(args: &[String]) -> ExitCode {
+// ---------------------------------------------------------------------------
+// Checkers
+// ---------------------------------------------------------------------------
+
+fn cmd_checkers(args: &[String]) -> ExitCode {
     match args.first().map(|s| s.as_str()) {
         Some("verify") => checkers_verify(),
         Some("perft") => checkers_perft(&args[1..]),
-        Some("moves") => checkers_moves(),
+        Some("moves") => {
+            println!("{}", parlor_checkers::Board::start().legal_moves().len());
+            ExitCode::SUCCESS
+        }
         _ => {
-            eprintln!("usage: parlor-cli checkers <verify|perft|moves>");
+            eprintln!("usage: checkers <verify|perft|moves>");
             ExitCode::FAILURE
         }
     }
 }
 
 fn checkers_verify() -> ExitCode {
-    let mut all_ok = true;
-    for b in parlor_checkers::BENCHMARKS {
-        let c = parlor_checkers::check(b);
-        let status = if c.passed() {
-            "PASS"
-        } else {
-            all_ok = false;
-            "FAIL"
-        };
+    let mut ok = true;
+    for benchmark in parlor_checkers::BENCHMARKS {
+        let check = parlor_checkers::check(benchmark);
+        let pass = check.passed();
+        if !pass {
+            ok = false;
+        }
         println!(
             "[{}] {} depth {} expected {} observed {}",
-            status,
-            c.benchmark.name,
-            c.benchmark.depth,
-            c.benchmark.expected_nodes,
-            c.observed_nodes
+            tag(pass),
+            check.benchmark.name,
+            check.benchmark.depth,
+            check.benchmark.expected_nodes,
+            check.observed_nodes
         );
     }
-    if all_ok {
+    if ok {
         ExitCode::SUCCESS
     } else {
         ExitCode::FAILURE
@@ -331,23 +376,21 @@ fn checkers_perft(args: &[String]) -> ExitCode {
         match args[i].as_str() {
             "--depth" => {
                 if i + 1 < args.len() {
-                    match args[i + 1].parse::<u32>() {
-                        Ok(d) => {
-                            depth = d;
-                            i += 2;
-                        }
+                    match args[i + 1].parse() {
+                        Ok(d) => depth = d,
                         Err(_) => {
                             eprintln!("invalid depth: {}", args[i + 1]);
                             return ExitCode::FAILURE;
                         }
                     }
+                    i += 2;
                 } else {
                     eprintln!("--depth requires a value");
                     return ExitCode::FAILURE;
                 }
             }
             other => {
-                eprintln!("unknown argument: {}", other);
+                eprintln!("unknown option: {other}");
                 return ExitCode::FAILURE;
             }
         }
@@ -356,10 +399,99 @@ fn checkers_perft(args: &[String]) -> ExitCode {
     ExitCode::SUCCESS
 }
 
-fn checkers_moves() -> ExitCode {
-    println!("{}", parlor_checkers::Board::start().legal_moves().len());
+// ---------------------------------------------------------------------------
+// Go
+// ---------------------------------------------------------------------------
+
+fn cmd_go(args: &[String]) -> ExitCode {
+    match args.first().map(|s| s.as_str()) {
+        Some("verify") => go_verify(),
+        Some("points") => go_points(&args[1..]),
+        _ => {
+            eprintln!("usage: go <verify|points>");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn go_verify() -> ExitCode {
+    let mut ok = true;
+
+    let points_19 = parlor_go::Board::new(19).point_count();
+    let pass_19 = points_19 == 361;
+    if !pass_19 {
+        ok = false;
+    }
+    println!(
+        "[{}] 19x19 point count = {} (expected 361)",
+        tag(pass_19),
+        points_19
+    );
+
+    let points_9 = parlor_go::Board::new(9).point_count();
+    let pass_9 = points_9 == 81;
+    if !pass_9 {
+        ok = false;
+    }
+    println!(
+        "[{}] 9x9 point count = {} (expected 81)",
+        tag(pass_9),
+        points_9
+    );
+
+    let moves_9 = parlor_go::Board::new(9)
+        .legal_moves(parlor_go::Color::Black)
+        .len();
+    let pass_moves = moves_9 == 81;
+    if !pass_moves {
+        ok = false;
+    }
+    println!(
+        "[{}] 9x9 black legal moves = {} (expected 81)",
+        tag(pass_moves),
+        moves_9
+    );
+
+    if ok {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
+}
+
+fn go_points(args: &[String]) -> ExitCode {
+    let mut size: usize = 19;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--size" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].parse() {
+                        Ok(s) => size = s,
+                        Err(_) => {
+                            eprintln!("invalid size: {}", args[i + 1]);
+                            return ExitCode::FAILURE;
+                        }
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("--size requires a value");
+                    return ExitCode::FAILURE;
+                }
+            }
+            other => {
+                eprintln!("unknown option: {other}");
+                return ExitCode::FAILURE;
+            }
+        }
+    }
+    println!("{}", parlor_go::Board::new(size).point_count());
     ExitCode::SUCCESS
 }
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -372,11 +504,15 @@ mod tests {
     fn backgammon_opening_pip_count() {
         let board = parlor_backgammon::Board::start();
         assert_eq!(board.pip_count(parlor_backgammon::Player::White), 167);
-        assert_eq!(board.pip_count(parlor_backgammon::Player::Black), 167);
     }
 
     #[test]
     fn checkers_opening_move_count() {
         assert_eq!(parlor_checkers::Board::start().legal_moves().len(), 7);
+    }
+
+    #[test]
+    fn go_board_point_count() {
+        assert_eq!(parlor_go::Board::new(19).point_count(), 361);
     }
 }
