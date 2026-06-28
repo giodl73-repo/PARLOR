@@ -37,7 +37,7 @@ The in-tree test suite additionally verifies startpos perft(5) = 4,865,609.
 |---|---|---|
 | **chess** | implemented | perft-verified legal move generation |
 | **backgammon** | implemented | rules kernel + verified pip count and dice distribution |
-| checkers | planned | perft-verifiable perfect-information kernel |
+| **checkers** | implemented | English-draughts kernel, perft-verified (mandatory capture) |
 | go | planned | rules / territory kernel |
 
 Backgammon is the deliberate second entry: it flips the analytical core from a
@@ -64,7 +64,8 @@ crates/
   parlor-core        # cross-game contract: Game, Perft, EvidenceLabel, PerftBenchmark
   parlor-chess       # chess kernel: board, FEN, legal moves, perft, cited benchmarks
   parlor-backgammon  # backgammon kernel: board, pip count, dice model, legal plays
-  parlor-cli         # one front door: `parlor games`, `parlor chess ...`, `parlor backgammon ...`
+  parlor-checkers    # checkers (English draughts) kernel: legal moves, perft, cited benchmarks
+  parlor-cli         # one front door: `parlor games`, `parlor chess|backgammon|checkers ...`
 ```
 
 ## Usage

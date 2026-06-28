@@ -9,6 +9,7 @@ name = "parlor"
 path = "src/main.rs"
 
 [dependencies]
+parlor-checkers.workspace = true
 parlor-core.workspace = true
 parlor-chess.workspace = true
 parlor-backgammon.workspace = true
