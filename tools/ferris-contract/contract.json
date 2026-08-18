@@ -1,0 +1,50 @@
+{
+  "schema": "parlor.ferris-consumer-contract/v1",
+  "ferris": {
+    "repository": "https://github.com/giodl73-repo/FERRIS.git",
+    "commit": "5cd1aa99727a23de25c79d067090e7444bdfb5e8",
+    "command_version": "0.1.0",
+    "result_schema": "ferris.command-result/v2",
+    "plan_schema": "ferris.validation-plan/v0"
+  },
+  "workspace_id": "org.giodl73/parlor",
+  "accepted_leaf": {
+    "changed_path": "crates/parlor-go/src/lib.rs",
+    "input_disposition": "owned_rust_path",
+    "selected_packages": [
+      {
+        "identity": "cargo-workspace-package:parlor-cli@0.1.0:crates/parlor-cli/Cargo.toml",
+        "disposition": "reverse_dependency"
+      },
+      {
+        "identity": "cargo-workspace-package:parlor-go@0.1.0:crates/parlor-go/Cargo.toml",
+        "disposition": "anchor"
+      }
+    ],
+    "activity_families": [
+      "check",
+      "test"
+    ]
+  },
+  "repository_fallback": {
+    "changed_path": "README.md",
+    "input_disposition": "full_workspace_fallback",
+    "package_identities": [
+      "cargo-workspace-package:parlor-backgammon@0.1.0:crates/parlor-backgammon/Cargo.toml",
+      "cargo-workspace-package:parlor-checkers@0.1.0:crates/parlor-checkers/Cargo.toml",
+      "cargo-workspace-package:parlor-chess@0.1.0:crates/parlor-chess/Cargo.toml",
+      "cargo-workspace-package:parlor-cli@0.1.0:crates/parlor-cli/Cargo.toml",
+      "cargo-workspace-package:parlor-core@0.1.0:crates/parlor-core/Cargo.toml",
+      "cargo-workspace-package:parlor-go@0.1.0:crates/parlor-go/Cargo.toml"
+    ],
+    "activity_families": [
+      "check",
+      "test"
+    ]
+  },
+  "owner_validation": [
+    "cargo test --release --workspace",
+    "cargo clippy --workspace --all-targets -- -D warnings",
+    "cargo fmt --all -- --check"
+  ]
+}

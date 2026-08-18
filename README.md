@@ -95,6 +95,23 @@ cargo test -p parlor-chess --test proof_surface
 The fixture records the accepted opening FEN with 20 legal moves and a
 structured `FenError::Fields` rejection for an incomplete FEN.
 
+PARLOR also owns a compatibility proof for the exact experimental FERRIS
+`validation-plan` contract used in its prior public validation-selection
+control:
+
+```
+python tools/ferris-contract/check.py
+```
+
+That proof builds the exact pinned FERRIS commit in a temporary directory,
+invokes its `cargo-ferris` adapter with Cargo's injected-token contract from
+inside the workspace, and verifies the `parlor-go` reverse cone plus the
+repository-file full-workspace fallback. Direct invocation prevents ambient
+Cargo aliases from substituting another command. The proof does not execute a
+FERRIS plan and does not replace any validation command above. See
+[`context/waves/2026-08-ferris-adoption/WAVE.md`](context/waves/2026-08-ferris-adoption/WAVE.md)
+for ownership, migration, and rollback boundaries.
+
 ## Non-goals
 
 - Not a chess *engine*: no search, evaluation, or play strength. PARLOR is a
