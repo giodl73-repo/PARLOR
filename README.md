@@ -86,6 +86,15 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --all -- --check
 ```
 
+Focused retained proof:
+
+```powershell
+cargo test -p parlor-chess --test proof_surface
+```
+
+The fixture records the accepted opening FEN with 20 legal moves and a
+structured `FenError::Fields` rejection for an incomplete FEN.
+
 ## Non-goals
 
 - Not a chess *engine*: no search, evaluation, or play strength. PARLOR is a

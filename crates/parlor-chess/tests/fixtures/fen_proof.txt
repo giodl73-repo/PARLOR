@@ -1,0 +1,4 @@
+accepted.fen=rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+accepted.legal_moves=20
+rejected.fen=8/8
+rejected.error=Fields
