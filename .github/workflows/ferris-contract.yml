@@ -1,0 +1,36 @@
+name: FERRIS consumer contract
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ferris-contract.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "README.md"
+      - "crates/**"
+      - "tools/ferris-contract/**"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact PARLOR revision
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" repository
+          git -C repository fetch --depth=1 origin "$GITHUB_SHA"
+          git -C repository checkout --detach FETCH_HEAD
+          test "$(git -C repository rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Verify pinned FERRIS contract
+        working-directory: repository
+        run: python3 tools/ferris-contract/check.py
