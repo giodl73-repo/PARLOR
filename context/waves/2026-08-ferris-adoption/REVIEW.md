@@ -1,6 +1,6 @@
 # FERRIS Consumer Contract Role Review
 
-Status: Accepted; merge gated on consumer CI
+Status: Accepted and complete
 Scope: PARLOR-owned exact FERRIS `validation-plan` compatibility proof
 
 ## Product Value Governor
@@ -51,9 +51,9 @@ changing ordinary Cargo behavior.
 
 ## Native Platform Adopter
 
-Pass-with-gate. The proof passed on the recorded Windows checkout. Merge
-requires the same consumer workflow to pass on GitHub's Ubuntu runner, using
-the exact pull-request event commit and exact public FERRIS pin.
+Pass. The proof passed on the recorded Windows checkout and the pull request's
+consumer workflow passed on GitHub's Ubuntu runner using the exact event
+commit and exact public FERRIS pin.
 
 ## Scope Keeper
 
@@ -63,10 +63,10 @@ authorize automatic FERRIS upgrades.
 
 ## Validation Checker
 
-Pass-with-gate. Local exact-pin and fetched-pin modes passed, including the
-Cargo-alias negative control. PARLOR release tests, Clippy, formatting, Python
-compilation, and diff hygiene passed. The remaining gate is the pull request's
-own Ubuntu consumer workflow.
+Pass. Local exact-pin and fetched-pin modes passed, including the Cargo-alias
+negative control. PARLOR release tests, Clippy, formatting, Python compilation,
+and diff hygiene passed. The pull request's Ubuntu consumer workflow also
+passed before merge.
 
 ## Autonomy Supervisor
 
@@ -94,3 +94,8 @@ and Cargo-alias bypass. No corrective pulse or expanded authority followed.
 All eleven roles accept the bounded consumer contract. Merge only after the
 consumer CI workflow passes. No role grants execution, validation narrowing,
 support, stability, source modification, or successor authority.
+
+The merge gate was satisfied by PARLOR PR
+[#1](https://github.com/giodl73-repo/PARLOR/pull/1). The post-merge pin
+migration from `5cd1aa9` to `8c0d674` and rollback to `5cd1aa9` both passed,
+so the documented lifecycle is now measured rather than prospective.
