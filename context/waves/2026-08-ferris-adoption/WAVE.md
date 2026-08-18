@@ -1,6 +1,6 @@
 # Wave: FERRIS Consumer Contract
 
-Status: Complete after Pulse 01; merge requires the consumer CI proof
+Status: Complete after Pulse 01 and post-merge lifecycle rehearsal
 
 ## Product outcome
 
@@ -109,6 +109,13 @@ the repository-file fallback remain explicit and PARLOR's three documented
 owner validation commands remain present. A passing FERRIS proof does not
 remove the requirement to run those commands.
 
+The lifecycle was rehearsed on 2026-08-18 by changing only the consumer pin
+from merge commit `5cd1aa99727a23de25c79d067090e7444bdfb5e8` to its exact
+implementation commit `8c0d674fc5c5ee3eb07d2e24bd3647d7ee45038a`, running the
+proof against that clean exact checkout, restoring the merge-commit pin, and
+running the proof again. Both directions passed with no retained contract
+change.
+
 ## Rollback and removal
 
 Rollback restores the previous `contract.json` pin and checker behavior, then
@@ -122,6 +129,7 @@ contract, CLI behavior, or owner validation command.
 
 The implementation and all-eleven-role disposition are recorded in
 [`pulses/pulse-01.md`](pulses/pulse-01.md) and
-[`REVIEW.md`](REVIEW.md). The branch may merge only after its own
-`FERRIS consumer contract` workflow proves the fetched exact pin on the
-consumer CI host.
+[`REVIEW.md`](REVIEW.md). PARLOR PR
+[#1](https://github.com/giodl73-repo/PARLOR/pull/1) merged after its
+[`FERRIS consumer contract` workflow](https://github.com/giodl73-repo/PARLOR/actions/runs/32177692037)
+proved the fetched exact pin on the consumer Ubuntu CI host.
