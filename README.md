@@ -121,4 +121,10 @@ for ownership, migration, and rollback boundaries.
 
 ## License
 
-MIT.
+PARLOR uses separate licenses for software and content. Source code,
+executable scripts, tests, configuration, and ordinary software
+documentation are MIT-licensed (copyright giodl73-repo). Original
+non-software content is licensed CC BY-NC 4.0 (copyright giodl73-repo);
+commercial use of that content requires separate written permission.
+Third-party material remains under its own terms.
+See [LICENSE](./LICENSE) for the complete notice.
