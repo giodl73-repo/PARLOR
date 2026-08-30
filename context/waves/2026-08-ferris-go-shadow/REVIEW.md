@@ -26,6 +26,10 @@ Status: local integration accepted; GitHub shadow pending
 2. Pull-request selection must come from the exact event range, not a guessed
    path. The workflow now fetches history and passes the base revision; the
    adapter derives the NUL-delimited Git path set.
+3. Inheriting `HOME` caused ordinary GitHub workspace paths to trigger Ferris's
+   output-leak detector. The adapter now stages the resolved toolchain Cargo
+   binary and inherits only the minimal process environment needed by the
+   toolchain.
 
 ## Decision
 
