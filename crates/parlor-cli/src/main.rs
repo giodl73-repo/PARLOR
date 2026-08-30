@@ -10,6 +10,7 @@ fn main() -> ExitCode {
             cmd_games();
             ExitCode::SUCCESS
         }
+        Some("verify") => cmd_verify_all(),
         Some("chess") => cmd_chess(&args[1..]),
         Some("backgammon") => cmd_backgammon(&args[1..]),
         Some("checkers") => cmd_checkers(&args[1..]),
@@ -26,7 +27,7 @@ fn main() -> ExitCode {
 }
 
 fn print_usage() {
-    eprintln!("usage: parlor-cli <games|chess|backgammon|checkers|go> ...");
+    eprintln!("usage: parlor-cli <games|verify|chess|backgammon|checkers|go> ...");
 }
 
 fn tag(pass: bool) -> &'static str {
@@ -47,6 +48,26 @@ fn cmd_games() {
         ("Go", "go"),
     ] {
         println!("{:<12} {:<11} implemented", name, id);
+    }
+}
+
+fn cmd_verify_all() -> ExitCode {
+    let mut all_passed = true;
+    for (name, verify) in [
+        ("chess", chess_verify as fn() -> ExitCode),
+        ("backgammon", backgammon_verify),
+        ("checkers", checkers_verify),
+        ("go", go_verify),
+    ] {
+        println!("== {name} ==");
+        if verify() != ExitCode::SUCCESS {
+            all_passed = false;
+        }
+    }
+    if all_passed {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
     }
 }
 
@@ -537,5 +558,10 @@ mod tests {
     fn go_opening_legal_move_count() {
         let board = parlor_go::Board::new(9);
         assert_eq!(board.legal_move_count(board.to_move()), 81);
+    }
+
+    #[test]
+    fn aggregate_verification_passes() {
+        assert_eq!(super::cmd_verify_all(), std::process::ExitCode::SUCCESS);
     }
 }
