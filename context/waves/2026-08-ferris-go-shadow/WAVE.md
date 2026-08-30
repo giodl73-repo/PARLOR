@@ -1,6 +1,6 @@
 # Wave: Ferris Go Shadow
 
-Status: implementation
+Status: local proof complete; GitHub shadow pending
 
 ## Frame
 
@@ -56,3 +56,42 @@ Abandon or redesign the integration if Ferris selects outside Cargo's reverse
 dependency closure, loses a required owner gate, produces a success receipt
 after a failed lane, requires credentials, or prevents the direct Cargo commands
 from passing after complete removal.
+
+## Local evidence
+
+At integration revision `86ca1fee5498bd191d9a76398e268489d17b7e68`,
+the full topology produced ten successful lanes:
+
+- format and Clippy;
+- release product build;
+- release test build with `--no-run`; and
+- one test lane for each of the six workspace packages.
+
+Receipt
+`sha256:1bdb427c928e35ce2a2772c5019b3cd1b6c7a618975ec32f5fdd3954985aff1b`
+verified successfully.
+
+The test-build barrier completed in 294 ms after the product build. The six
+package test lanes then completed independently in the model while reusing
+Cargo's local target outputs. These timings describe one warm local run and are
+not a performance claim.
+
+## Feature scenario
+
+PARLOR added a public `Board::legal_move_count` API and
+`parlor go legal --size <N>` command. The feature changes `parlor-go` and its
+CLI consumer without changing other game kernels.
+
+At revision `6c1b52ccc416c0d238005a386b2f4c917953b2e5`, selecting
+`crates/parlor-go/src/lib.rs` produced exactly:
+
+- `parlor-go`;
+- `parlor-cli`;
+- two quality lanes;
+- two build lanes; and
+- two package test lanes.
+
+All six lanes passed and receipt
+`sha256:9dffc06718ad1d1e547d449ae31700cf96a3c391170161d5aea2089ef6d0916c`
+verified successfully. Selecting `parlor-core` produced all six packages;
+selecting `README.md` produced the named `full_workspace_fallback`.
