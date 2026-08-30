@@ -30,6 +30,10 @@ Status: accepted
    output-leak detector. The adapter now stages the resolved toolchain Cargo
    binary and inherits only the minimal process environment needed by the
    toolchain.
+4. A later multi-package Windows run exposed that Rustdoc requires a writable
+   temporary directory. The adapter now retains `TEMP` and `TMP` only on
+   Windows; Ferris's output-leak detector and all other environment filtering
+   remain unchanged.
 
 ## Decision
 

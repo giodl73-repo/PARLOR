@@ -116,3 +116,9 @@ The first Ubuntu attempt correctly failed because inherited `HOME` appeared in
 Cargo's workspace diagnostic and triggered Ferris's leak detector. The adapter
 was narrowed to the resolved toolchain Cargo binary and the minimal process
 environment; the complete rerun then passed without weakening the detector.
+
+A later Windows multi-package run found that omitting `TEMP` and `TMP` made
+Rustdoc fall back to `C:\WINDOWS`, where doctest temporary-directory creation
+was denied. The adapter now preserves those two variables only on Windows.
+This restores owner test behavior without broadening the environment on Linux
+or weakening Ferris's output-leak detector.
