@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -45,11 +46,34 @@ def require(actual, expected, label):
         raise ContractFailure(f"{label}: expected {expected!r}, observed {actual!r}")
 
 
+def cargo_command():
+    discovered = shutil.which("cargo")
+    if discovered:
+        return discovered
+    known = Path.home() / ".cargo" / "bin" / (
+        "cargo.exe" if os.name == "nt" else "cargo"
+    )
+    if known.is_file():
+        return known
+    raise ContractFailure("cargo executable was not found on PATH or in ~/.cargo/bin")
+
+
+def cargo_env():
+    env = os.environ.copy()
+    cargo = Path(cargo_command())
+    cargo_dir = str(cargo.parent)
+    current_path = env.get("PATH", "")
+    if cargo_dir not in current_path.split(os.pathsep):
+        env["PATH"] = cargo_dir + os.pathsep + current_path
+    return env
+
+
 def prepare_ferris(contract, ferris_source, temporary_root):
     pin = contract["ferris"]["commit"]
     if ferris_source is None:
         source = temporary_root / "ferris"
         run(["git", "init", "--quiet", source], cwd=temporary_root)
+        run(["git", "-C", source, "config", "core.longpaths", "true"], cwd=temporary_root)
         run(
             [
                 "git",
@@ -84,7 +108,7 @@ def prepare_ferris(contract, ferris_source, temporary_root):
     target = temporary_root / "target"
     run(
         [
-            "cargo",
+            cargo_command(),
             "build",
             "--locked",
             "--manifest-path",
@@ -121,6 +145,7 @@ def invoke_validation_plan(executable, workspace_id, changed_path):
             "json",
         ],
         cwd=nested_directory,
+        env=cargo_env(),
     )
     if result.stderr:
         raise ContractFailure("cargo ferris emitted unexpected stderr")
@@ -267,7 +292,9 @@ def main():
     )
     validate_owner_contract(contract)
 
-    with tempfile.TemporaryDirectory(prefix="parlor-ferris-contract-") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix="parlor-ferris-contract-", ignore_cleanup_errors=True
+    ) as directory:
         temporary_root = Path(directory)
         executable = prepare_ferris(contract, args.ferris_source, temporary_root)
         validate_accepted_leaf(executable, contract)

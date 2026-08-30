@@ -29,12 +29,14 @@ live in the game crate.
 
 1. **chess** (done): board, FEN, legal move generation, perft, cited benchmarks
    (startpos d1–d5, Kiwipete d1–d3). CLI: `verify`, `perft`, `moves`.
-2. **backgammon** (next): board, pip count, legal move generation under a dice
-   roll, and a Monte-Carlo rollout equity estimate labelled `Estimated`; cite a
-   published match-equity table as `Cited`.
-3. **checkers/draughts**: perfect-information kernel with its own perft-style
-   enumeration benchmark.
-4. **go**: rules kernel (legal moves, ko, captures, territory scoring).
+2. **backgammon** (done): board, pip count, dice distribution, legal move
+   generation under a dice roll, and property-tested rule anchors. Future
+   rollout equity estimates must be labelled `Estimated`, and any admitted
+   match-equity table must be cited as `Cited`.
+3. **checkers/draughts** (done): English-draughts kernel with mandatory capture
+   and retained perft-style enumeration benchmarks.
+4. **go** (done): rules kernel for captures, suicide, ko, legal moves, and area
+   scoring.
 
 Cross-game analysis layers (shared, later): opening/branching-factor statistics,
 state-space size estimates (labelled), and a uniform `verify` surface.
