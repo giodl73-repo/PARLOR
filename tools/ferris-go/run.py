@@ -112,6 +112,8 @@ def inherited_environment():
         "SYSTEMROOT",
         "VCINSTALLDIR",
     }
+    if os.name == "nt":
+        names.update({"TEMP", "TMP"})
     return sorted(name for name in names if name in os.environ)
 
 
