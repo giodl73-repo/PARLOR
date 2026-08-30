@@ -1,0 +1,14 @@
+{
+  "schema": "parlor.ferris-go-topology/v1",
+  "repository_id": "github.com/giodl73-repo/PARLOR",
+  "workspace_id": "org.giodl73/parlor",
+  "topology_id": "parlor.owner-ci/v1",
+  "packages": [
+    "parlor-core",
+    "parlor-backgammon",
+    "parlor-checkers",
+    "parlor-chess",
+    "parlor-go",
+    "parlor-cli"
+  ]
+}

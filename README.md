@@ -112,6 +112,23 @@ FERRIS plan and does not replace any validation command above. See
 [`context/waves/2026-08-ferris-adoption/WAVE.md`](context/waves/2026-08-ferris-adoption/WAVE.md)
 for ownership, migration, and rollback boundaries.
 
+PARLOR also runs a non-required
+[`Ferris Go shadow`](.github/workflows/ferris-go.yml). It preserves the direct
+Cargo gates above while separating quality, release build, release test-build,
+and package test evidence in one verifiable receipt:
+
+```console
+python tools/ferris-go/run.py --ferris <FERRIS_BINARY> --full
+python tools/ferris-go/run.py --ferris <FERRIS_BINARY> \
+  --changed-path crates/parlor-go/src/lib.rs
+```
+
+A `parlor-go` change selects `parlor-go` plus its reverse consumer
+`parlor-cli`; a `parlor-core` or repository-level change widens to the full
+workspace. See [`tools/ferris-go/README.md`](tools/ferris-go/README.md) for the
+topology and removal path. Ferris remains a shadow and does not replace required
+owner validation.
+
 ## Non-goals
 
 - Not a chess *engine*: no search, evaluation, or play strength. PARLOR is a
