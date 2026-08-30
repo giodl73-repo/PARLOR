@@ -110,6 +110,8 @@ def selected_packages(ferris, topology, changed_paths, full):
         "validation-plan",
         "--workspace-id",
         topology["workspace_id"],
+        "--manifest-path",
+        REPOSITORY_ROOT / "Cargo.toml",
         "--format",
         "json",
     ]
