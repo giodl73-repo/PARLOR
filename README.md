@@ -76,6 +76,7 @@ parlor games                                   # list the roster
 parlor chess verify                            # check the kernel against cited perft
 parlor chess perft [--fen "<FEN>"] [--depth N] [--divide]
 parlor chess moves [--fen "<FEN>"]
+parlor go legal [--size N]                    # count legal moves for the side to move
 ```
 
 ## Validation
