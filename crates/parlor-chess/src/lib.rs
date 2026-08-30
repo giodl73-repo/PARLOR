@@ -684,6 +684,9 @@ impl Game for Chess {
     fn name(&self) -> &'static str {
         "Chess"
     }
+    fn player_count(&self) -> u8 {
+        2
+    }
     fn initial_position(&self) -> Board {
         Board::start()
     }

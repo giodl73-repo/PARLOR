@@ -1,6 +1,8 @@
 use std::env;
 use std::process::ExitCode;
 
+use parlor_core::Game;
+
 const DEFAULT_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 fn main() -> ExitCode {
@@ -38,16 +40,24 @@ fn tag(pass: bool) -> &'static str {
 }
 
 fn cmd_games() {
-    println!("{:<12} {:<11} STATUS", "GAME", "ID");
-    println!("{:<12} {:<11} ------", "----", "--");
-    for (name, id) in [
-        ("Chess", "chess"),
-        ("Backgammon", "backgammon"),
-        ("Checkers", "checkers"),
-        ("Go", "go"),
-    ] {
-        println!("{:<12} {:<11} implemented", name, id);
+    println!("{:<12} {:<11} {:<8} STATUS", "GAME", "ID", "PLAYERS");
+    println!("{:<12} {:<11} {:<8} ------", "----", "--", "-------");
+    for (name, id, players) in game_catalog() {
+        println!("{name:<12} {id:<11} {players:<8} implemented");
     }
+}
+
+fn game_catalog() -> [(&'static str, &'static str, u8); 4] {
+    [
+        game_summary(&parlor_chess::Chess),
+        game_summary(&parlor_backgammon::Backgammon),
+        game_summary(&parlor_checkers::Checkers),
+        game_summary(&parlor_go::Go),
+    ]
+}
+
+fn game_summary(game: &impl Game) -> (&'static str, &'static str, u8) {
+    (game.name(), game.id(), game.player_count())
 }
 
 // ---------------------------------------------------------------------------
@@ -512,6 +522,21 @@ fn parse_go_size(args: &[String]) -> Result<usize, ()> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    #[test]
+    fn game_catalog_uses_shared_metadata() {
+        assert_eq!(
+            game_catalog(),
+            [
+                ("Chess", "chess", 2),
+                ("Backgammon", "backgammon", 2),
+                ("Checkers", "checkers", 2),
+                ("Go", "go", 2),
+            ]
+        );
+    }
+
     #[test]
     fn chess_opening_move_count() {
         assert_eq!(parlor_chess::Board::start().legal_moves().len(), 20);
