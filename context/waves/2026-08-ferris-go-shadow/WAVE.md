@@ -1,6 +1,6 @@
 # Wave: Ferris Go Shadow
 
-Status: local proof complete; GitHub shadow pending
+Status: complete
 
 ## Frame
 
@@ -95,3 +95,24 @@ All six lanes passed and receipt
 `sha256:9dffc06718ad1d1e547d449ae31700cf96a3c391170161d5aea2089ef6d0916c`
 verified successfully. Selecting `parlor-core` produced all six packages;
 selecting `README.md` produced the named `full_workspace_fallback`.
+
+## GitHub-hosted proof
+
+PARLOR PR #4 run
+[`33291824269`](https://github.com/giodl73-repo/PARLOR/actions/runs/33291824269)
+passed on GitHub-hosted Ubuntu:
+
+- direct owner validation passed;
+- the existing pinned Ferris consumer contract passed;
+- exact Ferris commit
+  `3138f4d3d23094e91b7d143fe2548df97617794d` built;
+- the PR change set widened visibly to `full_workspace_fallback`;
+- all ten Ferris lanes succeeded;
+- receipt
+  `sha256:fdc673342158ed711545c0119a160f1c9260a08a22097ad1f0abe84880d5c422`
+  was uploaded as the owner workflow artifact.
+
+The first Ubuntu attempt correctly failed because inherited `HOME` appeared in
+Cargo's workspace diagnostic and triggered Ferris's leak detector. The adapter
+was narrowed to the resolved toolchain Cargo binary and the minimal process
+environment; the complete rerun then passed without weakening the detector.
