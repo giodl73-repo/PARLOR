@@ -314,7 +314,7 @@ impl Game for Go {
     }
 
     fn name(&self) -> &'static str {
-        "Go"
+        "Go / Baduk"
     }
 
     fn player_count(&self) -> u8 {
