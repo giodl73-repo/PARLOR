@@ -317,6 +317,10 @@ impl Game for Go {
         "Go"
     }
 
+    fn player_count(&self) -> u8 {
+        2
+    }
+
     fn initial_position(&self) -> Board {
         Board::new(19)
     }
