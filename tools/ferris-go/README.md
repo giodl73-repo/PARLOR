@@ -28,12 +28,17 @@ shared target directory before the package test lanes execute them.
 python tools/ferris-go/run.py \
   --ferris <FERRIS_BINARY> \
   --changed-path crates/parlor-go/src/lib.rs
+
+python tools/ferris-go/run.py \
+  --ferris <FERRIS_BINARY> \
+  --base-revision origin/master
 ```
 
 Ferris `validation-plan` supplies Cargo's reverse-dependency closure. PARLOR
 then maps that package set into its owner-defined build and test lanes.
 Formatting and Clippy remain full-workspace gates. Unknown or repository-level
-paths widen to all six packages.
+paths widen to all six packages. Pull requests use the exact base-to-head Git
+diff; manual dispatch runs the full topology.
 
 ## Evidence and removal
 

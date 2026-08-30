@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
@@ -47,12 +49,20 @@ jobs:
           path: _ferris-source
       - name: Build exact Ferris revision
         run: cargo build --locked --release --manifest-path _ferris-source/Cargo.toml -p ferris-cli --bin ferris
+      - name: Run changed-path owner topology through Ferris
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 tools/ferris-go/run.py \
+            --ferris _ferris-source/target/release/ferris \
+            --base-revision "${{ github.event.pull_request.base.sha }}" \
+            --principal github-actions
       - name: Run full owner topology through Ferris
-        run: >-
-          python3 tools/ferris-go/run.py
-          --ferris _ferris-source/target/release/ferris
-          --full
-          --principal github-actions
+        if: github.event_name != 'pull_request'
+        run: |
+          python3 tools/ferris-go/run.py \
+            --ferris _ferris-source/target/release/ferris \
+            --full \
+            --principal github-actions
       - name: Upload Ferris receipt
         if: always()
         uses: actions/upload-artifact@v4

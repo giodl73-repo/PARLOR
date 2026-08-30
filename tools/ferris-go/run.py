@@ -77,6 +77,30 @@ def tracked_files():
     )
 
 
+def changed_paths_from_base(base_revision):
+    result = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(REPOSITORY_ROOT),
+            "diff",
+            "--name-only",
+            "-z",
+            f"{base_revision}...HEAD",
+        ],
+        capture_output=True,
+        check=True,
+    )
+    paths = [
+        Path(value.decode("utf-8"))
+        for value in result.stdout.split(b"\0")
+        if value
+    ]
+    if not paths:
+        raise ShadowFailure("the selected revision range contains no changed paths")
+    return paths
+
+
 def inherited_environment():
     names = {
         "CARGO_HOME",
@@ -166,8 +190,11 @@ def create_command(owner, executable, argv, environment, files):
 
 def prepare(args):
     topology = json.loads(TOPOLOGY_PATH.read_text(encoding="utf-8"))
+    changed_paths = args.changed_path
+    if args.base_revision:
+        changed_paths = changed_paths_from_base(args.base_revision)
     packages, selection = selected_packages(
-        args.ferris, topology, args.changed_path, args.full
+        args.ferris, topology, changed_paths, args.full
     )
 
     ferris_root = REPOSITORY_ROOT / ".ferris"
@@ -399,6 +426,10 @@ def parse_args():
         action="append",
         type=Path,
         help="repository-relative changed path; repeat for multiple paths",
+    )
+    selection.add_argument(
+        "--base-revision",
+        help="select paths changed between this revision and HEAD",
     )
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--principal", default="parlor-local-owner")
