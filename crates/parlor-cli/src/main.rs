@@ -532,7 +532,7 @@ mod tests {
                 ("Chess", "chess", 2),
                 ("Backgammon", "backgammon", 2),
                 ("Checkers", "checkers", 2),
-                ("Go", "go", 2),
+                ("Go / Baduk", "go", 2),
             ]
         );
     }
