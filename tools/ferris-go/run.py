@@ -103,26 +103,27 @@ def changed_paths_from_base(base_revision):
 
 def inherited_environment():
     names = {
-        "CARGO_HOME",
-        "HOME",
-        "HOMEDRIVE",
-        "HOMEPATH",
         "INCLUDE",
         "LD_LIBRARY_PATH",
         "LIB",
         "LIBPATH",
-        "LOCALAPPDATA",
         "PATH",
         "PATHEXT",
-        "RUSTUP_HOME",
-        "SYSTEMDRIVE",
         "SYSTEMROOT",
-        "TEMP",
-        "TMP",
-        "USERPROFILE",
         "VCINSTALLDIR",
     }
     return sorted(name for name in names if name in os.environ)
+
+
+def cargo_executable(explicit):
+    if explicit:
+        return explicit
+    if shutil.which("rustup"):
+        resolved = Path(run(["rustup", "which", "cargo"]).stdout.strip())
+        if resolved.is_file():
+            return resolved
+    discovered = shutil.which("cargo")
+    return Path(discovered) if discovered else Path()
 
 
 def selected_packages(ferris, topology, changed_paths, full):
@@ -201,7 +202,7 @@ def prepare(args):
     if ferris_root.exists():
         shutil.rmtree(ferris_root)
 
-    cargo_source = Path(args.cargo or shutil.which("cargo") or "")
+    cargo_source = cargo_executable(args.cargo)
     if not cargo_source.is_file():
         raise ShadowFailure("Cargo executable is unavailable")
     executable_name = "cargo.exe" if os.name == "nt" else "cargo"
