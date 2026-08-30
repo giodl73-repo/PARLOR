@@ -6,6 +6,7 @@ on:
       - ".github/workflows/ferris-go.yml"
       - "Cargo.toml"
       - "crates/**"
+      - "context/waves/2026-08-ferris-go-shadow/**"
       - "tools/ferris-go/**"
   workflow_dispatch:
 
