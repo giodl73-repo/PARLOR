@@ -407,8 +407,9 @@ fn cmd_go(args: &[String]) -> ExitCode {
     match args.first().map(|s| s.as_str()) {
         Some("verify") => go_verify(),
         Some("points") => go_points(&args[1..]),
+        Some("legal") => go_legal(&args[1..]),
         _ => {
-            eprintln!("usage: go <verify|points>");
+            eprintln!("usage: go <verify|points|legal>");
             ExitCode::FAILURE
         }
     }
@@ -439,9 +440,7 @@ fn go_verify() -> ExitCode {
         points_9
     );
 
-    let moves_9 = parlor_go::Board::new(9)
-        .legal_moves(parlor_go::Color::Black)
-        .len();
+    let moves_9 = parlor_go::Board::new(9).legal_move_count(parlor_go::Color::Black);
     let pass_moves = moves_9 == 81;
     if !pass_moves {
         ok = false;
@@ -460,6 +459,25 @@ fn go_verify() -> ExitCode {
 }
 
 fn go_points(args: &[String]) -> ExitCode {
+    let size = match parse_go_size(args) {
+        Ok(size) => size,
+        Err(()) => return ExitCode::FAILURE,
+    };
+    println!("{}", parlor_go::Board::new(size).point_count());
+    ExitCode::SUCCESS
+}
+
+fn go_legal(args: &[String]) -> ExitCode {
+    let size = match parse_go_size(args) {
+        Ok(size) => size,
+        Err(()) => return ExitCode::FAILURE,
+    };
+    let board = parlor_go::Board::new(size);
+    println!("{}", board.legal_move_count(board.to_move()));
+    ExitCode::SUCCESS
+}
+
+fn parse_go_size(args: &[String]) -> Result<usize, ()> {
     let mut size: usize = 19;
     let mut i = 0;
     while i < args.len() {
@@ -470,23 +488,22 @@ fn go_points(args: &[String]) -> ExitCode {
                         Ok(s) => size = s,
                         Err(_) => {
                             eprintln!("invalid size: {}", args[i + 1]);
-                            return ExitCode::FAILURE;
+                            return Err(());
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("--size requires a value");
-                    return ExitCode::FAILURE;
+                    return Err(());
                 }
             }
             other => {
                 eprintln!("unknown option: {other}");
-                return ExitCode::FAILURE;
+                return Err(());
             }
         }
     }
-    println!("{}", parlor_go::Board::new(size).point_count());
-    ExitCode::SUCCESS
+    Ok(size)
 }
 
 // ---------------------------------------------------------------------------
@@ -514,5 +531,11 @@ mod tests {
     #[test]
     fn go_board_point_count() {
         assert_eq!(parlor_go::Board::new(19).point_count(), 361);
+    }
+
+    #[test]
+    fn go_opening_legal_move_count() {
+        let board = parlor_go::Board::new(9);
+        assert_eq!(board.legal_move_count(board.to_move()), 81);
     }
 }
