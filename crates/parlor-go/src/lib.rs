@@ -246,6 +246,11 @@ impl Board {
         moves
     }
 
+    /// Count the moves currently legal for `color`.
+    pub fn legal_move_count(&self, color: Color) -> usize {
+        self.legal_moves(color).len()
+    }
+
     /// Area score as (black, white): stones on the board plus empty regions
     /// surrounded wholly by one color. Regions touching both colors (dame)
     /// count for neither.
@@ -331,6 +336,14 @@ mod tests {
     fn empty_board_has_all_legal_moves() {
         let board = Board::new(9);
         assert_eq!(board.legal_moves(Color::Black).len(), 81);
+    }
+
+    #[test]
+    fn legal_move_count_tracks_occupied_points() {
+        let mut board = Board::new(9);
+        assert_eq!(board.legal_move_count(Color::Black), 81);
+        board.play((4, 4), Color::Black).unwrap();
+        assert_eq!(board.legal_move_count(Color::White), 80);
     }
 
     #[test]

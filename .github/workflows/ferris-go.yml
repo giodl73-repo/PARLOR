@@ -1,0 +1,73 @@
+name: Ferris Go shadow
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ferris-go.yml"
+      - "Cargo.toml"
+      - "crates/**"
+      - "context/waves/2026-08-ferris-go-shadow/**"
+      - "tools/ferris-go/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FERRIS_REPOSITORY: giodl73-repo/FERRIS
+  FERRIS_REVISION: 3138f4d3d23094e91b7d143fe2548df97617794d
+
+jobs:
+  owner-validation:
+    name: Owner validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --release --workspace
+
+  ferris-go:
+    name: Ferris Go shadow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Check out exact Ferris revision
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.FERRIS_REPOSITORY }}
+          ref: ${{ env.FERRIS_REVISION }}
+          path: _ferris-source
+      - name: Build exact Ferris revision
+        run: cargo build --locked --release --manifest-path _ferris-source/Cargo.toml -p ferris-cli --bin ferris
+      - name: Run changed-path owner topology through Ferris
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 tools/ferris-go/run.py \
+            --ferris _ferris-source/target/release/ferris \
+            --base-revision "${{ github.event.pull_request.base.sha }}" \
+            --principal github-actions
+      - name: Run full owner topology through Ferris
+        if: github.event_name != 'pull_request'
+        run: |
+          python3 tools/ferris-go/run.py \
+            --ferris _ferris-source/target/release/ferris \
+            --full \
+            --principal github-actions
+      - name: Upload Ferris receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ferris-go-receipt-${{ github.sha }}
+          path: .ferris/receipts/*.json
+          if-no-files-found: error

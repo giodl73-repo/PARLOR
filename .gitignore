@@ -2,3 +2,5 @@
 **/*.rs.bk
 Cargo.lock
 .craft/
+.ferris/
+/_ferris-source/
