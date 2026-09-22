@@ -3,6 +3,12 @@
 PARLOR owns this adapter and its CI topology. Ferris executes the resulting
 immutable Action Plan but does not define PARLOR's required gates.
 
+The adapter writes PARLOR's explicit ordered lane policy as
+`.ferris/action-plan-lanes.json` and passes it with the content-bound owner
+entrypoint declaration to `ferris prepare-action-plan --lanes`. Ferris compiles
+the unsigned Action Plan; PARLOR independently creates the short-lived approval
+and invokes execution.
+
 ## Full shadow
 
 ```console
@@ -40,11 +46,14 @@ Formatting and Clippy remain full-workspace gates. Unknown or repository-level
 paths widen to all six packages. Pull requests use the exact base-to-head Git
 diff; manual dispatch runs the full topology.
 
+When `--cargo <PATH>` is provided, the adapter uses that exact Cargo for both
+Ferris planning visibility and repository-local execution staging.
+
 ## Evidence and removal
 
-Generated plans, approvals, staged tools, and receipts live under `.ferris/`
-and are ignored by Git. The approval is short-lived and local; it is not an
-authenticated identity assertion.
+Generated lane policy, plans, approvals, staged tools, and receipts live under
+`.ferris/` and are ignored by Git. The approval is short-lived and local; it is
+not an authenticated identity assertion.
 
 Delete `.ferris/` to remove every generated runtime artifact. Delete this
 directory and `.github/workflows/ferris-go.yml` to remove the integration.
