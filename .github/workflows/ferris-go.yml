@@ -15,7 +15,7 @@ permissions:
 
 env:
   FERRIS_REPOSITORY: giodl73-repo/FERRIS
-  FERRIS_REVISION: 3138f4d3d23094e91b7d143fe2548df97617794d
+  FERRIS_REVISION: 2665bfdd430a2e24e4848f22f37b912bbbcc8f6e
 
 jobs:
   owner-validation:

@@ -22,13 +22,14 @@ class ShadowFailure(RuntimeError):
     pass
 
 
-def run(command, *, cwd=REPOSITORY_ROOT, capture=True):
+def run(command, *, cwd=REPOSITORY_ROOT, capture=True, environment=None):
     result = subprocess.run(
         [str(value) for value in command],
         cwd=cwd,
         capture_output=capture,
         text=True,
         check=False,
+        env=environment,
     )
     if result.returncode != 0:
         if capture:
@@ -128,7 +129,7 @@ def cargo_executable(explicit):
     return Path(discovered) if discovered else Path()
 
 
-def selected_packages(ferris, topology, changed_paths, full):
+def selected_packages(ferris, topology, changed_paths, full, environment):
     if full:
         return topology["packages"], "full"
 
@@ -145,7 +146,7 @@ def selected_packages(ferris, topology, changed_paths, full):
     for changed_path in changed_paths:
         command.extend(["--changed-path", REPOSITORY_ROOT / changed_path])
 
-    document = json.loads(run(command).stdout)
+    document = json.loads(run(command, environment=environment).stdout)
     if document["result_class"] != "success":
         raise ShadowFailure("Ferris validation planning did not succeed")
     record = document["record"]
@@ -196,17 +197,22 @@ def prepare(args):
     changed_paths = args.changed_path
     if args.base_revision:
         changed_paths = changed_paths_from_base(args.base_revision)
+    cargo_source = cargo_executable(args.cargo)
+    if not cargo_source.is_file():
+        raise ShadowFailure("Cargo executable is unavailable")
+    cargo_source = cargo_source.resolve()
+    planning_environment = os.environ.copy()
+    planning_environment["PATH"] = os.pathsep.join(
+        [str(cargo_source.parent), planning_environment.get("PATH", "")]
+    )
     packages, selection = selected_packages(
-        args.ferris, topology, changed_paths, args.full
+        args.ferris, topology, changed_paths, args.full, planning_environment
     )
 
     ferris_root = REPOSITORY_ROOT / ".ferris"
     if ferris_root.exists():
         shutil.rmtree(ferris_root)
 
-    cargo_source = cargo_executable(args.cargo)
-    if not cargo_source.is_file():
-        raise ShadowFailure("Cargo executable is unavailable")
     executable_name = "cargo.exe" if os.name == "nt" else "cargo"
     executable_relative = Path(".ferris") / "bin" / executable_name
     executable_path = REPOSITORY_ROOT / executable_relative
@@ -271,7 +277,7 @@ def prepare(args):
         )
 
     entrypoints = []
-    lanes = []
+    lane_policies = []
     for entrypoint_id, gate, argv, dependencies, timeout_ms in definitions:
         command = create_command(
             owner,
@@ -289,15 +295,13 @@ def prepare(args):
             {"entrypoint_id": entrypoint_id, "command": command}
         )
         entrypoints.append(entrypoint)
-        lanes.append(
+        lane_policies.append(
             {
                 "lane_id": entrypoint_id,
                 "owner_gate_id": gate,
                 "required": True,
                 "depends_on": dependencies,
                 "entrypoint_id": entrypoint_id,
-                "entrypoint_identity": entrypoint["entrypoint_identity"],
-                "command": command,
                 "timeout_ms": timeout_ms,
                 "stdout_limit_bytes": MAX_OUTPUT_BYTES,
                 "stderr_limit_bytes": MAX_OUTPUT_BYTES,
@@ -319,26 +323,38 @@ def prepare(args):
         }
     )
 
-    plan = {
-        "schema": "ferris.action-plan/v1",
-        "action_plan_id": "",
-        "repository_id": topology["repository_id"],
-        "source_revision": revision,
-        "topology_id": topology["topology_id"],
-        "declaration_id": declaration["declaration_id"],
-        "approval_id": "",
-        "lanes": lanes,
-    }
-    plan["action_plan_id"] = sha256_json(
-        {
-            "schema": plan["schema"],
-            "repository_id": plan["repository_id"],
-            "source_revision": plan["source_revision"],
-            "topology_id": plan["topology_id"],
-            "declaration_id": plan["declaration_id"],
-            "lanes": plan["lanes"],
-        }
+    declaration_path = write_identity_json(
+        ferris_root / "entrypoints", declaration["declaration_id"], declaration
     )
+    lane_policy = {
+        "schema": "ferris.action-plan-lanes/v1",
+        "repository_id": topology["repository_id"],
+        "topology_id": topology["topology_id"],
+        "lanes": lane_policies,
+    }
+    lane_policy_path = ferris_root / "action-plan-lanes.json"
+    lane_policy_path.write_text(
+        f"{json.dumps(lane_policy, indent=2)}\n", encoding="utf-8"
+    )
+    prepared_plan_path = ferris_root / "prepared-action-plan.json"
+    prepared = run(
+        [
+            args.ferris,
+            "prepare-action-plan",
+            "--entrypoints",
+            declaration_path,
+            "--lanes",
+            lane_policy_path,
+            "--output",
+            prepared_plan_path,
+            "--format",
+            "json",
+        ]
+    )
+    plan = json.loads(prepared.stdout)
+    if json.loads(prepared_plan_path.read_text(encoding="utf-8")) != plan:
+        raise ShadowFailure("Ferris prepared Action Plan output does not match stdout")
+    prepared_plan_path.unlink()
 
     expires_at = (
         datetime.datetime.now(datetime.timezone.utc)
@@ -365,9 +381,6 @@ def prepare(args):
     )
     plan["approval_id"] = approval["approval_id"]
 
-    write_identity_json(
-        ferris_root / "entrypoints", declaration["declaration_id"], declaration
-    )
     write_identity_json(ferris_root / "approvals", approval["approval_id"], approval)
     write_identity_json(ferris_root / "action-plans", plan["action_plan_id"], plan)
     return {
@@ -378,7 +391,8 @@ def prepare(args):
         "action_plan_id": plan["action_plan_id"],
         "approval_id": approval["approval_id"],
         "declaration_id": declaration["declaration_id"],
-        "lane_count": len(lanes),
+        "lane_count": len(lane_policies),
+        "lane_policy_path": lane_policy_path.relative_to(REPOSITORY_ROOT).as_posix(),
         "bound_file_count": len(files),
     }
 
