@@ -4,3 +4,11 @@ Cargo.lock
 .craft/
 .ferris/
 /_ferris-source/
+
+!/Cargo.lock
+!/browser/workbench/Cargo.lock
+/browser/workbench/.cache/
+/browser/workbench/node_modules/
+/browser/workbench/test-results/
+/browser/workbench/__pycache__/
+/browser/workbench/target/

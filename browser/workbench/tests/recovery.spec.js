@@ -1,0 +1,41 @@
+import {test,expect} from "@playwright/test";
+import fs from "node:fs";
+const controls=JSON.parse(fs.readFileSync(new URL("../.cache/resource-controls.json",import.meta.url),"utf8"));
+async function ready(page){await page.goto("./");await expect(page.locator("#status")).toContainText("Native result ready");}
+// Synthetic transport/lifecycle probes are not game outcomes or native goldens.
+async function fault(page,mode){await page.evaluate(mode=>{
+ const Real=window.Worker;window.restoreWorker=()=>window.Worker=Real;window.probe={terminated:0};window.Worker=class{
+  constructor(){if(mode==="constructor")throw Error("synthetic constructor fault");}
+  terminate(){window.probe.terminated++;}
+  postMessage(data){const emit=value=>this.onmessage?.({data:value});if(data.type==="init"){this.ids={id:data.id,generation:data.generation};if(mode!=="startup")queueMicrotask(()=>emit({type:"ready",...this.ids}));}
+   if(data.type==="run"){
+    if(mode==="crash")queueMicrotask(()=>this.onerror?.({message:"synthetic crash"}));
+    if(mode==="malformed"||mode==="oversized"||mode==="wrong-game")queueMicrotask(async()=>{const hash=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(data.input)))].map(x=>x.toString(16).padStart(2,"0")).join("");const raw=mode==="oversized"?"x".repeat(2097153):JSON.stringify(mode==="wrong-game"?{kind:"report",request_sha256:hash,data:{game:{id:"go",name:"wrong game",players:2},boundary:"synthetic",area_score:{},legal_moves:[],placements:[]}}:{kind:"report",request_sha256:hash,data:null});emit({type:"report",...this.ids,raw,elapsedMs:0});});
+    if(mode==="stale"){emit({type:"fatal",id:data.id+1,generation:data.generation,error:"wrong ID"});emit({type:"fatal",id:data.id,generation:data.generation-1,error:"wrong generation"});emit({type:"ready",...this.ids});window.emitOld=()=>emit({type:"fatal",...this.ids,error:"old terminated worker"});}
+   }
+  }
+ };
+},mode);}
+for(const[mode,message]of[["constructor","Worker unavailable"],["crash","Engine crashed"],["malformed","Malformed engine report"],["oversized","Malformed engine report"],["wrong-game","Malformed engine report"]])test(`${mode} preserves input and disables stale exports; actual restart recovers`,async({page})=>{
+ await ready(page);const before=await page.locator("#input").inputValue();await fault(page,mode);await page.locator("#run").click();await expect(page.locator("#status")).toContainText(message);await expect(page.locator("#input")).toHaveValue(before);await expect(page.locator("#results")).toBeHidden();await expect(page.locator("#export-report")).toBeDisabled();await page.evaluate(()=>window.restoreWorker());await page.locator("#run").click();await expect(page.locator("#status")).toContainText("Native result ready");
+});
+for(const[mode,message,ms]of[["startup","Startup deadline",12000],["compute","Computation deadline",10000]])test(`actual ${mode} deadline terminates worker`,async({page})=>{
+ await ready(page);const before=await page.locator("#input").inputValue();await fault(page,mode);const start=Date.now();await page.locator("#run").click();await expect(page.locator("#status")).toContainText(message,{timeout:ms+5000});expect(Date.now()-start).toBeGreaterThanOrEqual(ms-100);expect(await page.evaluate(()=>window.probe.terminated)).toBe(1);await expect(page.locator("#input")).toHaveValue(before);await expect(page.locator("#export-report")).toBeDisabled();
+});
+test("edits and cancellation terminate CPU; wrong IDs/generations/queued ready and late worker cannot publish",async({page})=>{
+ await ready(page);await fault(page,"stale");await page.locator("#run").click();await expect(page.locator("#status")).toContainText("Running native kernel");await page.locator("#input").fill('{"game":"checkers"}');await page.evaluate(()=>window.emitOld());await expect(page.locator("#status")).toContainText("Input changed");await expect(page.locator("#export-report")).toBeDisabled();await page.locator("#run").click();await page.locator("#cancel").click();await page.evaluate(()=>window.emitOld());await expect(page.locator("#status")).toContainText("Computation cancelled");expect(await page.evaluate(()=>window.probe.terminated)).toBe(2);
+});
+test("actual read deadline, invalid UTF-8 and whole-file admission retain original/editor",async({page})=>{
+ await page.addInitScript(()=>{const read=File.prototype.arrayBuffer;File.prototype.arrayBuffer=function(){return this.name.startsWith("stall")?new Promise(()=>{}):read.call(this);};});await ready(page);const raw=Buffer.from('{"game":"checkers"}');await page.locator("#file").setInputFiles({name:"original.json",mimeType:"application/json",buffer:raw});await expect(page.locator("#origin")).toContainText("original.json");const before=await page.locator("#input").inputValue();const start=Date.now();await page.locator("#file").setInputFiles({name:"stall.json",mimeType:"application/json",buffer:raw});await expect(page.locator("#status")).toContainText("Read deadline exceeded",{timeout:7500});expect(Date.now()-start).toBeGreaterThanOrEqual(4900);await page.locator("#file").setInputFiles({name:"bad.json",mimeType:"application/json",buffer:Buffer.from([0xff])});await expect(page.locator("#status")).toContainText(/encoded data|utf-8|UTF-8/);await page.locator("#file").setInputFiles({name:"large.json",mimeType:"application/json",buffer:Buffer.alloc(262145,120)});await expect(page.locator("#status")).toContainText("whole file exceeds");await expect(page.locator("#input")).toHaveValue(before);const[d]=await Promise.all([page.waitForEvent("download"),page.locator("#original").click()]);expect(fs.readFileSync(await d.path())).toEqual(raw);
+});
+test("newer editor/example/Run intents fence older file and example completion",async({page})=>{
+ await page.addInitScript(()=>{const read=File.prototype.arrayBuffer;File.prototype.arrayBuffer=async function(){if(this.name.startsWith("slow"))await new Promise(r=>setTimeout(r,500));return read.call(this);};});await ready(page);
+ await page.locator("#file").setInputFiles({name:"slow-old.json",mimeType:"application/json",buffer:Buffer.from('{"game":"go","size":9,"player":"black"}')});await page.locator("#input").fill('{"game":"checkers"}');await page.waitForTimeout(650);await expect(page.locator("#input")).toHaveValue('{"game":"checkers"}');
+ await page.locator("#file").setInputFiles({name:"slow-old2.json",mimeType:"application/json",buffer:Buffer.from('{"game":"go","size":9,"player":"black"}')});await page.locator("#load-example").click();await expect(page.locator("#status")).toContainText("Example loaded");await page.waitForTimeout(650);await expect(page.locator("#input")).toHaveValue(/"game": "chess"/);
+ await page.route("**/examples.json",async route=>{await new Promise(r=>setTimeout(r,500));await route.continue();});await page.locator("#example").selectOption("go");await page.locator("#load-example").click();await page.locator("#run").click();await expect(page.locator("#game")).toContainText("Chess");await page.waitForTimeout(650);await expect(page.locator("#input")).toHaveValue(/"game": "chess"/);await expect(page.locator("#status")).toContainText("Native result ready");
+});
+test("admitted sequence/board/perft maxima remain inspectable on mobile; budget refusal clears exports",async({page})=>{
+ await page.setViewportSize({width:390,height:844});await ready(page);
+ for(const name of["maximum128 legal chess moves","backgammon selections16","maximum Go19 with128 explicit placements","maximum admitted Kiwipete preflight99950"]){const q=controls.find(x=>x.name===name).request;await page.locator("#input").fill(JSON.stringify(q));await page.locator("#run").click();await expect(page.locator("#status")).toContainText("Native result ready");expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
+ await expect(page.locator("#summary")).toContainText("97862 leaves");const q=controls.find(x=>x.name.startsWith("actual100000")).request;await page.locator("#input").fill(JSON.stringify(q));await page.locator("#run").click();await expect(page.locator("#status")).toContainText("preflight exceeds 100000");await expect(page.locator("#export-report")).toBeDisabled();await expect(page.locator("#results")).toBeHidden();
+});

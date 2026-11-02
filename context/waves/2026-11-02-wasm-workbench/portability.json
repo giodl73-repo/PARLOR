@@ -1,0 +1,43 @@
+{
+  "schema": "parlor.browser-portability.v1",
+  "status": "Local prototype only; source/legal/default/live qualification open",
+  "canonical_entry": "66ddd112827aeaff525daa0fe259f74222951bc6",
+  "public_entry": "770ee14659cc82bda9ce70b1ddb47a9cc0cb6df7",
+  "reconciled_entry": "aea809441e907a4f9de764ae2466c4305a13496b",
+  "native_tests": 33,
+  "adapter_tests": 4,
+  "strict_native_companion_host_wasm_lint_format": "pass",
+  "pinned_ferris_contract": "pass; exact5cd1aa99727a23de25c79d067090e7444bdfb5e8, accepted Go reverse cone and repository fallback; original tools unchanged",
+  "native_wasm_repeated_exact_outcomes": 54,
+  "independent_native_cli_controls": 36,
+  "browser_stats": {
+    "startTime": "2026-11-02T08:59:24.452Z",
+    "duration": 10111.185,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "wasm": {
+    "bytes": 278581,
+    "sha256": "8062ffe0ffbc253ab2e51d9793718f275bdcd79e13e6a2ad5266f8a37a3860c5",
+    "max_memory_bytes": 67108864,
+    "actual_memory_growth_refusal_tested": true
+  },
+  "foundation": {
+    "canonical_entry": "66ddd112827aeaff525daa0fe259f74222951bc6",
+    "public_entry": "770ee14659cc82bda9ce70b1ddb47a9cc0cb6df7",
+    "reconciled_entry": "aea809441e907a4f9de764ae2466c4305a13496b",
+    "native_kernels_shared_api_cli_tests_benchmarks": "unchanged from public entry",
+    "roles_policy_ferris_owner_controls": "unchanged from reconciled entry",
+    "root_lock": "new committed reproducible lock; six native packages, no external runtime deps"
+  },
+  "citation_boundary": "Checkers source string remains generic; repository expected references not independently corroborated or promoted to external rules authority. Native counts enumerate only native move tree.",
+  "preservation": "Prior PITFALL branch pushed; newer public metadata/CLI/Go/FERRIS integrations merged rather than overwritten",
+  "remaining": [
+    "Expanded named resource/budget/refusal/max-input and actual lifecycle/read/worker/race proof",
+    "Complete corresponding software/source/legal/notices/budgets/hash inventory/provenance",
+    "Independent source rebuild outside Git and full outcome/behavior replay",
+    "Final exact-head/default hosted qualification, fresh live proof and separate TRACKER snapshot"
+  ]
+}

@@ -146,3 +146,20 @@ non-software content is licensed CC BY-NC 4.0 (copyright giodl73-repo);
 commercial use of that content requires separate written permission.
 Third-party material remains under its own terms.
 See [LICENSE](./LICENSE) for the complete notice.
+
+## Rust/WASM rules workbench
+
+[Open the workbench](https://giodl73-repo.github.io/PARLOR/) to inspect own
+chess FEN/moves, checkers path sequences, backgammon dice/successor selections
+and explicit-color Go placements. The same native kernels supply legal
+continuations, bounded perft, pip/dice model, captures/area scores and diagnostics.
+[Build notes](browser/workbench/BUILD.md), [model/evidence notes](browser/workbench/MODEL.md),
+[source scope](browser/workbench/SOURCE-SCOPE.md) and the
+[release wave](context/waves/2026-11-02-wasm-workbench/WAVE.md) retain source,
+legal, custody and verification boundaries.
+
+This is a kernel diagnostic interface, not strength, online play, wagering,
+universal game state or complete rules certification. Original/current/LF inputs
+and exact exports stay separate. Native syntax/representation/turn/evidence
+limits remain visible; generic checkers attribution is not strengthened into
+fresh external authority. Native owner/FERRIS controls remain protected.
