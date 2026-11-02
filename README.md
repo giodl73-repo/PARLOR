@@ -146,3 +146,16 @@ non-software content is licensed CC BY-NC 4.0 (copyright giodl73-repo);
 commercial use of that content requires separate written permission.
 Third-party material remains under its own terms.
 See [LICENSE](./LICENSE) for the complete notice.
+
+## Static Rust/WASM rules-workbench candidate
+
+The [workbench wave](context/waves/2026-11-02-wasm-workbench/WAVE.md) exposes
+unchanged native legal continuations, bounded perft, dice/pip model, Go captures
+and area scores through a Rust worker. Four examples and own JSON positions/
+sequences retain game-specific meanings. [Build notes](browser/workbench/BUILD.md)
+and [model/evidence boundaries](browser/workbench/MODEL.md) document this locally
+verified candidate; source/legal/default/live qualification remains open.
+
+This is a kernel diagnostic interface, not an engine, play-strength claim, online
+product or replacement for retained owner/FERRIS controls. Retained generic
+checkers citation text is not upgraded into independently verified authority.

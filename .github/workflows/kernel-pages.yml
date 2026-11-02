@@ -1,0 +1,61 @@
+name: Qualify PARLOR kernel workbench prototype
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target/cargo
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Rust and bindings
+        shell: bash
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt,clippy --target wasm32-unknown-unknown
+          rustup default 1.95.0
+          curl -fsSL https://github.com/wasm-bindgen/wasm-bindgen/releases/download/0.2.127/wasm-bindgen-0.2.127-x86_64-unknown-linux-musl.tar.gz -o /tmp/parlor-bindgen.tar.gz
+          echo '61d4a7dc85acfa0d2354ccc0b8361928c7e52a746d17f28ebaa795ed3dc1614a  /tmp/parlor-bindgen.tar.gz' | sha256sum --check
+          tar -xzf /tmp/parlor-bindgen.tar.gz -C /tmp
+      - name: Guard native kernels and qualify Rust
+        run: |
+          python browser/workbench/verify-foundation.py
+          cargo fmt --all -- --check
+          cargo test --release --locked --workspace
+          cargo clippy --locked --workspace --all-targets -- -D warnings
+          cargo run --release --locked -p parlor-cli -- verify
+          python tools/ferris-contract/check.py
+          cargo fmt --manifest-path browser/workbench/Cargo.toml -- --check
+          cargo test --release --locked --manifest-path browser/workbench/Cargo.toml
+          cargo clippy --release --locked --manifest-path browser/workbench/Cargo.toml --all-targets -- -D warnings
+          cargo clippy --release --locked --manifest-path browser/workbench/Cargo.toml --target wasm32-unknown-unknown --lib -- -D warnings
+      - name: Build prototype and independent CLI controls
+        run: python browser/workbench/build-prototype.py --bindgen /tmp/wasm-bindgen-0.2.127-x86_64-unknown-linux-musl/wasm-bindgen
+      - name: Exercise actual worker under project prefix
+        working-directory: browser/workbench
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run test:pages
+      - name: Retain synthetic QA, not partial binary distribution
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parlor-workbench-prototype-qa
+          include-hidden-files: true
+          path: |
+            browser/workbench/.cache/
+            context/waves/2026-11-02-wasm-workbench/
+            LICENSE

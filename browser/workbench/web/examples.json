@@ -1,0 +1,7 @@
+{
+  "chess":{"game":"chess","moves":[],"depth":2},
+  "kiwipete":{"game":"chess","fen":"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1","moves":[],"depth":2},
+  "checkers":{"game":"checkers","paths":[],"depth":3},
+  "backgammon":{"game":"backgammon","turns":[],"player":"white","dice":[1,2]},
+  "go":{"game":"go","size":5,"placements":[{"row":0,"column":1,"color":"black"},{"row":0,"column":0,"color":"white"},{"row":1,"column":0,"color":"black"}],"player":"white"}
+}
