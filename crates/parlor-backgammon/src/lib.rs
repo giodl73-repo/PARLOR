@@ -373,6 +373,10 @@ impl Game for Backgammon {
         "Backgammon"
     }
 
+    fn player_count(&self) -> u8 {
+        2
+    }
+
     fn initial_position(&self) -> Self::Position {
         Board::start()
     }

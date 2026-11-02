@@ -2,13 +2,6 @@ name: FERRIS consumer contract
 
 on:
   pull_request:
-    paths:
-      - ".github/workflows/ferris-contract.yml"
-      - "Cargo.lock"
-      - "Cargo.toml"
-      - "README.md"
-      - "crates/**"
-      - "tools/ferris-contract/**"
   push:
     branches:
       - master

@@ -1,6 +1,8 @@
 use std::env;
 use std::process::ExitCode;
 
+use parlor_core::Game;
+
 const DEFAULT_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 fn main() -> ExitCode {
@@ -10,6 +12,7 @@ fn main() -> ExitCode {
             cmd_games();
             ExitCode::SUCCESS
         }
+        Some("verify") => cmd_verify_all(),
         Some("chess") => cmd_chess(&args[1..]),
         Some("backgammon") => cmd_backgammon(&args[1..]),
         Some("checkers") => cmd_checkers(&args[1..]),
@@ -26,7 +29,7 @@ fn main() -> ExitCode {
 }
 
 fn print_usage() {
-    eprintln!("usage: parlor-cli <games|chess|backgammon|checkers|go> ...");
+    eprintln!("usage: parlor-cli <games|verify|chess|backgammon|checkers|go> ...");
 }
 
 fn tag(pass: bool) -> &'static str {
@@ -38,15 +41,43 @@ fn tag(pass: bool) -> &'static str {
 }
 
 fn cmd_games() {
-    println!("{:<12} {:<11} STATUS", "GAME", "ID");
-    println!("{:<12} {:<11} ------", "----", "--");
-    for (name, id) in [
-        ("Chess", "chess"),
-        ("Backgammon", "backgammon"),
-        ("Checkers", "checkers"),
-        ("Go", "go"),
+    println!("{:<12} {:<11} {:<8} STATUS", "GAME", "ID", "PLAYERS");
+    println!("{:<12} {:<11} {:<8} ------", "----", "--", "-------");
+    for (name, id, players) in game_catalog() {
+        println!("{name:<12} {id:<11} {players:<8} implemented");
+    }
+}
+
+fn game_catalog() -> [(&'static str, &'static str, u8); 4] {
+    [
+        game_summary(&parlor_chess::Chess),
+        game_summary(&parlor_backgammon::Backgammon),
+        game_summary(&parlor_checkers::Checkers),
+        game_summary(&parlor_go::Go),
+    ]
+}
+
+fn game_summary(game: &impl Game) -> (&'static str, &'static str, u8) {
+    (game.name(), game.id(), game.player_count())
+}
+
+fn cmd_verify_all() -> ExitCode {
+    let mut all_passed = true;
+    for (name, verify) in [
+        ("chess", chess_verify as fn() -> ExitCode),
+        ("backgammon", backgammon_verify),
+        ("checkers", checkers_verify),
+        ("go", go_verify),
     ] {
-        println!("{:<12} {:<11} implemented", name, id);
+        println!("== {name} ==");
+        if verify() != ExitCode::SUCCESS {
+            all_passed = false;
+        }
+    }
+    if all_passed {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
     }
 }
 
@@ -407,8 +438,9 @@ fn cmd_go(args: &[String]) -> ExitCode {
     match args.first().map(|s| s.as_str()) {
         Some("verify") => go_verify(),
         Some("points") => go_points(&args[1..]),
+        Some("legal") => go_legal(&args[1..]),
         _ => {
-            eprintln!("usage: go <verify|points>");
+            eprintln!("usage: go <verify|points|legal>");
             ExitCode::FAILURE
         }
     }
@@ -439,9 +471,7 @@ fn go_verify() -> ExitCode {
         points_9
     );
 
-    let moves_9 = parlor_go::Board::new(9)
-        .legal_moves(parlor_go::Color::Black)
-        .len();
+    let moves_9 = parlor_go::Board::new(9).legal_move_count(parlor_go::Color::Black);
     let pass_moves = moves_9 == 81;
     if !pass_moves {
         ok = false;
@@ -460,6 +490,25 @@ fn go_verify() -> ExitCode {
 }
 
 fn go_points(args: &[String]) -> ExitCode {
+    let size = match parse_go_size(args) {
+        Ok(size) => size,
+        Err(()) => return ExitCode::FAILURE,
+    };
+    println!("{}", parlor_go::Board::new(size).point_count());
+    ExitCode::SUCCESS
+}
+
+fn go_legal(args: &[String]) -> ExitCode {
+    let size = match parse_go_size(args) {
+        Ok(size) => size,
+        Err(()) => return ExitCode::FAILURE,
+    };
+    let board = parlor_go::Board::new(size);
+    println!("{}", board.legal_move_count(board.to_move()));
+    ExitCode::SUCCESS
+}
+
+fn parse_go_size(args: &[String]) -> Result<usize, ()> {
     let mut size: usize = 19;
     let mut i = 0;
     while i < args.len() {
@@ -470,23 +519,22 @@ fn go_points(args: &[String]) -> ExitCode {
                         Ok(s) => size = s,
                         Err(_) => {
                             eprintln!("invalid size: {}", args[i + 1]);
-                            return ExitCode::FAILURE;
+                            return Err(());
                         }
                     }
                     i += 2;
                 } else {
                     eprintln!("--size requires a value");
-                    return ExitCode::FAILURE;
+                    return Err(());
                 }
             }
             other => {
                 eprintln!("unknown option: {other}");
-                return ExitCode::FAILURE;
+                return Err(());
             }
         }
     }
-    println!("{}", parlor_go::Board::new(size).point_count());
-    ExitCode::SUCCESS
+    Ok(size)
 }
 
 // ---------------------------------------------------------------------------
@@ -495,6 +543,21 @@ fn go_points(args: &[String]) -> ExitCode {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    #[test]
+    fn game_catalog_uses_shared_metadata() {
+        assert_eq!(
+            game_catalog(),
+            [
+                ("Chess", "chess", 2),
+                ("Backgammon", "backgammon", 2),
+                ("Checkers", "checkers", 2),
+                ("Go / Baduk", "go", 2),
+            ]
+        );
+    }
+
     #[test]
     fn chess_opening_move_count() {
         assert_eq!(parlor_chess::Board::start().legal_moves().len(), 20);
@@ -514,5 +577,16 @@ mod tests {
     #[test]
     fn go_board_point_count() {
         assert_eq!(parlor_go::Board::new(19).point_count(), 361);
+    }
+
+    #[test]
+    fn go_opening_legal_move_count() {
+        let board = parlor_go::Board::new(9);
+        assert_eq!(board.legal_move_count(board.to_move()), 81);
+    }
+
+    #[test]
+    fn aggregate_verification_passes() {
+        assert_eq!(super::cmd_verify_all(), std::process::ExitCode::SUCCESS);
     }
 }

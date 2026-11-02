@@ -22,6 +22,7 @@ pub trait Game {
 
     fn id(&self) -> &'static str;
     fn name(&self) -> &'static str;
+    fn player_count(&self) -> u8;
     fn initial_position(&self) -> Self::Position;
 }
 
@@ -88,5 +89,30 @@ mod tests {
             label: EvidenceLabel::Heuristic,
         };
         assert!(!mismatched.passed());
+    }
+
+    struct TestGame;
+
+    impl Game for TestGame {
+        type Position = ();
+
+        fn id(&self) -> &'static str {
+            "test"
+        }
+
+        fn name(&self) -> &'static str {
+            "Test"
+        }
+
+        fn player_count(&self) -> u8 {
+            2
+        }
+
+        fn initial_position(&self) {}
+    }
+
+    #[test]
+    fn game_reports_player_count() {
+        assert_eq!(TestGame.player_count(), 2);
     }
 }
