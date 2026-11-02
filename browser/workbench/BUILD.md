@@ -36,3 +36,7 @@ cases. Binary identity across paths/platforms is not claimed. Complete source,
 notices/budgets/hashes must pass before binary upload; default deploy uses the
 same verified artifact. Exact pinned FERRIS consumer check and retained owner
 validation remain mandatory in full-checkout CI and are not replaced by this UI.
+
+Full-checkout release guards require full Git history including the preserved
+baseline/public-pitfall-reconciled-20261102 branch at aea8094 and the original
+PITFALL branch at66ddd11. Ordinary extracted-source builds require no ancestry.

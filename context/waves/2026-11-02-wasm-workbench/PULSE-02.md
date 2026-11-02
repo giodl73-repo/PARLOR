@@ -36,3 +36,14 @@ hash allowlist/inventory/budgets/provenance and outside-Git source replay helper
 are implemented but still require execution at a clean exact commit. The full
 nineteen-case delivery suite, independent source replay, exact final/default
 hosted qualification, fresh live proof and separate TRACKER pulse remain open.
+
+Full candidate131e5ce passes local and hosted41419449182 qualification:19 full
+browser cases,33 native/four adapter tests,76 exact repeated native/WASM outcomes,
+36 independent original CLI controls and complete89-file source/legal artifact.
+Downloaded software rebuilds outside Git/path with spaces, keeps first-party
+manifests inside extracted software and repeats all native/adapter tests, both
+76-response sets,36 original CLI controls and17 behavior cases. qualification.json
+records both source replays without binary-identity claims. Both original66ddd11
+and reconciledaea8094 baselines are preserved remotely, so exact protection checks
+survive squash/auto-deletion. Final documentation head must requalify before merge;
+default tested-artifact deployment/live proof and separate TRACKER pulse remain.

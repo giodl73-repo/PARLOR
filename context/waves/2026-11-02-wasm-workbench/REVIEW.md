@@ -11,3 +11,12 @@ citation verification. Order follows .roles/ROLE.md.
 | Player/Maintainer Advocate | Four immediately runnable examples and own JSON/sequence inputs expose meaningful kernel tasks; original/current/LF and exact exports stay distinct. Basic keyboard/mobile/error routes pass. Broader deadlines/races/resource/max-input and complete source/legal/rebuild/default/live gates remain open. |
 
 Recommend continued qualification, not release from prototype results alone.
+
+Candidate131e5ce now passes complete local/hosted native/transport/resource/
+source/legal/delivery gates in qualification.json. Limits, native diagnostics and
+evidence classes remain intact; the blocked16-turn fixture was replaced by an
+actually legal16-selection example without weakening admission expectations.
+FERRIS controls remain original, and both baseline histories are remotely retained.
+Recommend final exact-head requalification, then default/live verification before
+separate portfolio snapshot. Native law/citation boundaries remain unchanged;
+software review and benchmark agreement are not independent external authority.

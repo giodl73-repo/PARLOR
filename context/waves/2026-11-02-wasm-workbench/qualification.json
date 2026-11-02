@@ -1,0 +1,433 @@
+{
+  "schema": "parlor.full-qualification.v1",
+  "qualified_candidate": "131e5cea06b1ced26d6b44706056e8f17bae9c0f",
+  "hosted_run": 41419449182,
+  "hosted_status": "success",
+  "hosted_browser_stats": {
+    "startTime": "2026-11-02T09:19:10.796Z",
+    "duration": 37879.067,
+    "expected": 19,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "hosted_source_replay": {
+    "outside_git": true,
+    "path_contains_spaces": true,
+    "policy_production_archives_absent": true,
+    "first_party_manifest_paths_inside_source": true,
+    "native_tests": 33,
+    "adapter_tests": 4,
+    "independent_native_cli_controls": 36,
+    "browser_checks": 17,
+    "identical_rebuilt_native_responses": 76,
+    "identical_rebuilt_wasm_responses": 76,
+    "original_wasm_sha256": "97599e52f881d474a82b6f1b67e45a18d6fdb72242d4719fdb7f042b1e31396d",
+    "rebuilt_wasm_sha256": "52e073240fa60b10c3c379d6adf71b0d857e84f38afea032fc88ee5e9463665f",
+    "binary_identity_claimed": false,
+    "dependencies_vendored": false
+  },
+  "local_source_replay": {
+    "outside_git": true,
+    "path_contains_spaces": true,
+    "policy_production_archives_absent": true,
+    "first_party_manifest_paths_inside_source": true,
+    "native_tests": 33,
+    "adapter_tests": 4,
+    "independent_native_cli_controls": 36,
+    "browser_checks": 17,
+    "identical_rebuilt_native_responses": 76,
+    "identical_rebuilt_wasm_responses": 76,
+    "original_wasm_sha256": "8062ffe0ffbc253ab2e51d9793718f275bdcd79e13e6a2ad5266f8a37a3860c5",
+    "rebuilt_wasm_sha256": "09dd95f75e103700d1784ba9dd29a8686d66e3c45ba5f98dd4142309656a9121",
+    "binary_identity_claimed": false,
+    "dependencies_vendored": false
+  },
+  "native_controls": {
+    "cases": 76,
+    "each_repeated": 2,
+    "independent_native_cli_controls": 36,
+    "cli_checks": [
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "0"
+        ],
+        "stdout": "1"
+      },
+      {
+        "command": [
+          "chess",
+          "moves"
+        ],
+        "stdout": "b1c3\nb1a3\ng1h3\ng1f3\na2a3\na2a4\nb2b3\nb2b4\nc2c3\nc2c4\nd2d3\nd2d4\ne2e3\ne2e4\nf2f3\nf2f4\ng2g3\ng2g4\nh2h3\nh2h4\n20 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "1"
+        ],
+        "stdout": "20"
+      },
+      {
+        "command": [
+          "chess",
+          "moves"
+        ],
+        "stdout": "b1c3\nb1a3\ng1h3\ng1f3\na2a3\na2a4\nb2b3\nb2b4\nc2c3\nc2c4\nd2d3\nd2d4\ne2e3\ne2e4\nf2f3\nf2f4\ng2g3\ng2g4\nh2h3\nh2h4\n20 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "2"
+        ],
+        "stdout": "400"
+      },
+      {
+        "command": [
+          "chess",
+          "moves"
+        ],
+        "stdout": "b1c3\nb1a3\ng1h3\ng1f3\na2a3\na2a4\nb2b3\nb2b4\nc2c3\nc2c4\nd2d3\nd2d4\ne2e3\ne2e4\nf2f3\nf2f4\ng2g3\ng2g4\nh2h3\nh2h4\n20 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "3"
+        ],
+        "stdout": "8902"
+      },
+      {
+        "command": [
+          "chess",
+          "moves"
+        ],
+        "stdout": "b1c3\nb1a3\ng1h3\ng1f3\na2a3\na2a4\nb2b3\nb2b4\nc2c3\nc2c4\nd2d3\nd2d4\ne2e3\ne2e4\nf2f3\nf2f4\ng2g3\ng2g4\nh2h3\nh2h4\n20 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "0",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "1"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "a1b1\na1c1\na1d1\ne1f1\ne1d1\ne1g1\ne1c1\nh1g1\nh1f1\na2a3\na2a4\nb2b3\nd2e3\nd2f4\nd2g5\nd2h6\nd2c1\ne2f1\ne2d3\ne2c4\ne2b5\ne2a6\ne2d1\ng2g3\ng2g4\ng2h3\nc3d1\nc3b1\nc3a4\nc3b5\nf3g4\nf3h5\nf3g3\nf3h3\nf3e3\nf3d3\nf3f4\nf3f5\nf3f6\nd5d6\nd5e6\ne5f7\ne5g6\ne5g4\ne5d3\ne5c4\ne5c6\ne5d7\n48 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "1",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "48"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "a1b1\na1c1\na1d1\ne1f1\ne1d1\ne1g1\ne1c1\nh1g1\nh1f1\na2a3\na2a4\nb2b3\nd2e3\nd2f4\nd2g5\nd2h6\nd2c1\ne2f1\ne2d3\ne2c4\ne2b5\ne2a6\ne2d1\ng2g3\ng2g4\ng2h3\nc3d1\nc3b1\nc3a4\nc3b5\nf3g4\nf3h5\nf3g3\nf3h3\nf3e3\nf3d3\nf3f4\nf3f5\nf3f6\nd5d6\nd5e6\ne5f7\ne5g6\ne5g4\ne5d3\ne5c4\ne5c6\ne5d7\n48 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "2",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "2039"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "a1b1\na1c1\na1d1\ne1f1\ne1d1\ne1g1\ne1c1\nh1g1\nh1f1\na2a3\na2a4\nb2b3\nd2e3\nd2f4\nd2g5\nd2h6\nd2c1\ne2f1\ne2d3\ne2c4\ne2b5\ne2a6\ne2d1\ng2g3\ng2g4\ng2h3\nc3d1\nc3b1\nc3a4\nc3b5\nf3g4\nf3h5\nf3g3\nf3h3\nf3e3\nf3d3\nf3f4\nf3f5\nf3f6\nd5d6\nd5e6\ne5f7\ne5g6\ne5g4\ne5d3\ne5c4\ne5c6\ne5d7\n48 legal moves"
+      },
+      {
+        "command": [
+          "chess",
+          "perft",
+          "--depth",
+          "3",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "97862"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+        ],
+        "stdout": "a1b1\na1c1\na1d1\ne1f1\ne1d1\ne1g1\ne1c1\nh1g1\nh1f1\na2a3\na2a4\nb2b3\nd2e3\nd2f4\nd2g5\nd2h6\nd2c1\ne2f1\ne2d3\ne2c4\ne2b5\ne2a6\ne2d1\ng2g3\ng2g4\ng2h3\nc3d1\nc3b1\nc3a4\nc3b5\nf3g4\nf3h5\nf3g3\nf3h3\nf3e3\nf3d3\nf3f4\nf3f5\nf3f6\nd5d6\nd5e6\ne5f7\ne5g6\ne5g4\ne5d3\ne5c4\ne5c6\ne5d7\n48 legal moves"
+      },
+      {
+        "command": [
+          "checkers",
+          "perft",
+          "--depth",
+          "0"
+        ],
+        "stdout": "1"
+      },
+      {
+        "command": [
+          "checkers",
+          "perft",
+          "--depth",
+          "1"
+        ],
+        "stdout": "7"
+      },
+      {
+        "command": [
+          "checkers",
+          "perft",
+          "--depth",
+          "2"
+        ],
+        "stdout": "49"
+      },
+      {
+        "command": [
+          "checkers",
+          "perft",
+          "--depth",
+          "3"
+        ],
+        "stdout": "302"
+      },
+      {
+        "command": [
+          "go",
+          "points",
+          "--size",
+          "1"
+        ],
+        "stdout": "1"
+      },
+      {
+        "command": [
+          "go",
+          "legal",
+          "--size",
+          "1"
+        ],
+        "stdout": "0"
+      },
+      {
+        "command": [
+          "go",
+          "points",
+          "--size",
+          "5"
+        ],
+        "stdout": "25"
+      },
+      {
+        "command": [
+          "go",
+          "legal",
+          "--size",
+          "5"
+        ],
+        "stdout": "25"
+      },
+      {
+        "command": [
+          "go",
+          "points",
+          "--size",
+          "9"
+        ],
+        "stdout": "81"
+      },
+      {
+        "command": [
+          "go",
+          "legal",
+          "--size",
+          "9"
+        ],
+        "stdout": "81"
+      },
+      {
+        "command": [
+          "go",
+          "points",
+          "--size",
+          "19"
+        ],
+        "stdout": "361"
+      },
+      {
+        "command": [
+          "go",
+          "legal",
+          "--size",
+          "19"
+        ],
+        "stdout": "361"
+      },
+      {
+        "command": [
+          "backgammon",
+          "roll",
+          "1",
+          "1"
+        ],
+        "stdout": "42 distinct legal plays for 1-1"
+      },
+      {
+        "command": [
+          "backgammon",
+          "roll",
+          "1",
+          "2"
+        ],
+        "stdout": "15 distinct legal plays for 1-2"
+      },
+      {
+        "command": [
+          "backgammon",
+          "roll",
+          "2",
+          "5"
+        ],
+        "stdout": "8 distinct legal plays for 2-5"
+      },
+      {
+        "command": [
+          "backgammon",
+          "roll",
+          "6",
+          "6"
+        ],
+        "stdout": "11 distinct legal plays for 6-6"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "8/8"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "invalid FEN: Fields\n"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "8/8/8/8/8/8/8/8 w - -"
+        ],
+        "exit": 0,
+        "stdout": "0 legal moves\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "8/8/8/8/8/8/8/8 invalid - -"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "invalid FEN: Color\n"
+      },
+      {
+        "command": [
+          "chess",
+          "moves",
+          "--fen",
+          "8/8/8/8/8/8/8/8 w - z9"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "invalid FEN: Square\n"
+      }
+    ]
+  },
+  "artifact": {
+    "schema": "parlor.kernel-workbench-release.v1",
+    "commit": "131e5cea06b1ced26d6b44706056e8f17bae9c0f",
+    "repository": "https://github.com/giodl73-repo/PARLOR",
+    "canonical_entry": "66ddd112827aeaff525daa0fe259f74222951bc6",
+    "public_entry": "770ee14659cc82bda9ce70b1ddb47a9cc0cb6df7",
+    "native_entry": "aea809441e907a4f9de764ae2466c4305a13496b",
+    "source_scope": "Complete native Rust workspace, tests/fixtures and browser companion; NOT a full repository or owner-control archive. See SOURCE-SCOPE.md.",
+    "source_files": 41,
+    "source_zip_sha256": "b60f1ab9b0b90ec44f3517679544bb0834af25e526a49aecaa80d3b579c38d5f",
+    "wasm_sha256": "97599e52f881d474a82b6f1b67e45a18d6fdb72242d4719fdb7f042b1e31396d",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2",
+    "wasm_bindgen": "0.2.127",
+    "dependency_groups": 32,
+    "rust_notice_files": 12,
+    "runtime_files": [
+      "index.html",
+      "app.js",
+      "style.css",
+      "worker.js",
+      "examples.json",
+      "pkg/parlor_browser_workbench.js",
+      "pkg/parlor_browser_workbench_bg.wasm"
+    ],
+    "limits": {
+      "request_bytes": 262144,
+      "fen_bytes": 4096,
+      "sequence_entries": 128,
+      "backgammon_selections": 16,
+      "go_max_odd_size": 19,
+      "dice_min": 1,
+      "dice_max": 6,
+      "perft_max_depth": 3,
+      "preflight_visited_nodes": 100000,
+      "report_bytes": 2097152,
+      "wasm_linear_memory_bytes": 67108864
+    },
+    "budgets": {
+      "runtime_bytes": 2097152,
+      "optional_source_zip_bytes": 10485760,
+      "site_bytes": 26214400
+    },
+    "scope": "Four native kernel diagnostics, not complete game-law/position/strength/adjudication certification or new external citation validation. Native limitations and game-specific meanings remain explicit. Both owner FERRIS integrations remain protected, not runtime dependencies.",
+    "source_replay": "Build outside Git/path with spaces with first-party manifests inside software; repeat both complete target outcomes, original CLI controls and behavior separately. No binary identity claim."
+  },
+  "runtime_bytes": 304652,
+  "artifact_files": 89,
+  "remaining": "Final documentation head must requalify, then default/live proof and separate TRACKER snapshot."
+}
