@@ -1,5 +1,7 @@
 """Stage synthetic local prototype; native kernels and original CLI are the oracles."""
 import argparse,hashlib,json,os,pathlib,shutil,subprocess
+import importlib.util
+_spec=importlib.util.spec_from_file_location("resource_controls",pathlib.Path(__file__).with_name("resource-controls.py"));_module=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_module)
 p=argparse.ArgumentParser();p.add_argument('--bindgen',required=True,type=pathlib.Path);a=p.parse_args();B=pathlib.Path(__file__).resolve().parent;R=B.parents[1];C=B/'.cache';C.mkdir(exist_ok=True);env=os.environ.copy();target=pathlib.Path(env.get('CARGO_TARGET_DIR',str(R/'target/cargo'))).resolve();env['CARGO_TARGET_DIR']=str(target);env['CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS']='-C link-arg=--max-memory=67108864'
 def run(args,**kw):return subprocess.run([str(x)for x in args],cwd=R,env=env,check=True,**kw)
 assert subprocess.check_output([str(a.bindgen.resolve()),'--version']).decode().strip()=='wasm-bindgen 0.2.127'
@@ -45,4 +47,7 @@ for fen in ['8/8','8/8/8/8/8/8/8/8 w - -','8/8/8/8/8/8/8/8 invalid - -','8/8/8/8
 add('native ignored FEN clocks',{'game':'chess','fen':examples['kiwipete']['fen']+' extra-field','depth':1})
 for q in [{'game':'chess','depth':4},{'game':'go','size':20,'player':'black'},{'game':'go','size':0,'player':'black'},{'game':'backgammon','dice':[0,7],'player':'white'},{'game':'backgammon','dice':[1,2],'player':'other'},{'game':'chess','fen':'x'*4097},{'game':'chess','moves':['e2e4']*129}]:add('browser resource refusal',q,'browser_refusal')
 for raw in ['{','null','{}','{"game":"chess","game":"go"}','{"game":"chess","unexpected":1}',text({'game':'chess'})+' {}',text({'game':'go','size':5,'player':'black','placements':[{'row':4294967296,'column':0,'color':'black'}]})]:add('strict transport rejection',raw,'input_error')
+resource=_module.controls()
+for item in resource:add(item['name'],item['request'],item['expected_kind'])
+(C/'resource-controls.json').write_text(json.dumps(resource,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 (C/'native-cases.json').write_text(json.dumps(cases,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');(C/'native-controls.json').write_text(json.dumps({'cases':len(cases),'each_repeated':2,'independent_native_cli_controls':len(cli_checks),'cli_checks':cli_checks},indent=2)+'\n',encoding='utf-8');print(json.dumps({'cases':len(cases),'direct_cli_controls':len(cli_checks),'staged':str(S)}))
